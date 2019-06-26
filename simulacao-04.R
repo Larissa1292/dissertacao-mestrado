@@ -14,8 +14,8 @@ pi0 <- 0.1
 pi1 <- 0.2
 lambda <- 2
 sig <- 0.2
-R <- 10 #num de replicas de Monte Carlo
-n <- 100 # tamanho da amostra
+R <- 1 #num de replicas de Monte Carlo
+n <- 1000 # tamanho da amostra
 #ytil <- matrix(0, nrow = n, ncol = R)
 #opt1 <- matrix(0, R, n) #col = num de parametros a serem estimados
 
@@ -75,7 +75,7 @@ emv.lambda <- rep(0, R)
 #### Processo de  Monte Carlo ####
 # i <- 1 # p/ testar o programar sem rodar o 'for'
 
-for (i in 1:R) {
+for(i in 1:R){
   print(i)
   
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
@@ -97,9 +97,9 @@ for (i in 1:R) {
   
   p.i <- ifelse(y == 0, pi0, pi1)
   
-  uniforemes <- runif(n, 0, 1)
+  uniformes <- runif(n, 0, 1)
   
-  comparacao <- ifelse(uniforemes < p.i, 1, 0)
+  comparacao <- ifelse(uniformes < p.i, 1, 0)
   
   ytil <- abs(comparacao - y)
   
@@ -113,21 +113,21 @@ for (i in 1:R) {
   # Generate the true binary response y_true, with covariate x
   
   # lm <-  beta0 + beta1 * x    ###  AQUI TEM QUE SER beta0 e beta 1.... POR QUE DIFERENTES BETAS? ok
-  # pr.probit <- pnorm(lm)  
+  # pr.probit <- pnorm(lm)
   # y_true <- rbinom(n, 1, pr.probit)
-  
+
   # # Generate the misclassifed variable 
   # 
   # pr_pi0.probit <- pi0
   # alpha0.probit <- rbinom(n, 1, pr_pi0.probit)  # alpha0=(Y=1|Y_T=0)
-  # 
+
   # pr_pi1.probit <- 1 - pi1
   # alpha1.probit <- rbinom(n, 1, pr_pi1.probit)  # alpha1=(Y=1|Y_T=1)
   # y <- vector()  ### Y OBSERVADO!
   # 
   # for(i in 1:n){
   #   y[i] <- ifelse(y_true[i]==1, alpha1.probit[i], alpha0.probit[i])
-  # }
+  #}
   # 
   # QUAL A OUTRA MANEIRA DE GERAR Y ?
   # Considerando a prob de sucesso P(Y=1|W) =  pi0 + (1 - pi0 - pi1) * E_x|W{\Phi(beta0 + beta1*x)}
@@ -141,14 +141,14 @@ for (i in 1:R) {
   
   #### Passo 5: otimizacao ####
   
-  tryCatch({
+  tryCatch(  {
     otimizacao <- optim(
-      par = c(0.09, 0.1, 0.1, 0.9, 1.9),
+      par = c(0.1, 0.2, 0, 1, 2),
       fn = m4_n,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
-      lower = c(0, 0,-Inf,-Inf,-Inf),
-      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf)
+      lower = c(0, 0,-10,-10,-10),
+      upper = c(0.99999999999, 0.99999999999, 10, 10, 10)
     )
     ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
     
@@ -167,8 +167,8 @@ for (i in 1:R) {
   }, error = function(cond)
     NA)
   
-  
-} # fim Monte Carlo
+}
+# fim Monte Carlo
 
 # calculando as médias das estimativas de cada parâmetro
 pi0medio <- mean(emv.pi0)
