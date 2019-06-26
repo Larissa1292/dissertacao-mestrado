@@ -237,3 +237,6 @@ resultado <- list(
   # Num_Falhas = falhas,
   Tempo_Execução = tempo
 )
+
+# Imprimindo os resultados
+resultado
