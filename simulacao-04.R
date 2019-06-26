@@ -14,8 +14,8 @@ pi0 <- 0.1
 pi1 <- 0.2
 lambda <- 2
 sig <- 0.2
-R <- 1 #num de replicas de Monte Carlo
-n <- 1000 # tamanho da amostra
+R <- 2 #num de replicas de Monte Carlo
+n <- 5000 # tamanho da amostra
 #ytil <- matrix(0, nrow = n, ncol = R)
 #opt1 <- matrix(0, R, n) #col = num de parametros a serem estimados
 
