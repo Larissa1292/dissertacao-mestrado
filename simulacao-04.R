@@ -1,4 +1,6 @@
-# Ajustes (Especificados no Trello) de acordo com a reuniao do dia 19/06
+# Simulação de MC para o modelo 4 (Com erro de classificacao e erro de medida)
+
+# Ajustes (Especificados no Trello) de acordo com a reuniao do dia 19/06 (ok!)
 
 
 require(fExtremes)
