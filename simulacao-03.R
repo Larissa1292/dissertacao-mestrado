@@ -1,5 +1,5 @@
 # Simulação de MC para o modelo 3 (Somente com erro de medida)
-
+# Modelo somente com erro de medida, logo não tem erro de classificacao. Com isso, pi0 = 0 e pi1 = 0.
 
 require(fExtremes)
 require(mvtnorm)
@@ -88,11 +88,6 @@ for(i in 1:R){
   
   #### Passo 3: Gerar y_i da Bernoulli ####
   
-  ##  ?? REFAZER
-  # p <-  pnorm(parametros[3] + parametros[4] * w) #probit
-  # y <-  rbinom(n = length(x), size = 1, prob = p)   ### QUEM E ESTE Y ??????????
-  
-  # 
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
   
   p.i <- ifelse(y == 0, pi0, pi1)
