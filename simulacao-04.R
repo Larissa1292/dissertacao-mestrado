@@ -1,7 +1,5 @@
 # Simulação de MC para o modelo 4 (Com erro de classificacao e erro de medida)
 
-# Ajustes (Especificados no Trello) de acordo com a reuniao do dia 19/06 (ok!)
-
 
 require(fExtremes)
 require(mvtnorm)
@@ -18,8 +16,6 @@ lambda <- 2
 sig <- 0.2
 R <- 100 #num de replicas de Monte Carlo
 n <- 5000 # tamanho da amostra
-#ytil <- matrix(0, nrow = n, ncol = R)
-#opt1 <- matrix(0, R, n) #col = num de parametros a serem estimados
 
 #### Vetor de parâmetros ####
 
@@ -71,9 +67,6 @@ emv.beta0 <- rep(0, R)
 emv.beta1 <- rep(0, R)
 emv.lambda <- rep(0, R)
 
-#inicializando o contador de falhas
-#falhas <- 0
-
 #### Processo de  Monte Carlo ####
 # i <- 1 # p/ testar o programar sem rodar o 'for'
 
@@ -90,11 +83,6 @@ for(i in 1:R){
   
   #### Passo 3: Gerar y_i da Bernoulli ####
   
-  ##  ?? REFAZER
-  # p <-  pnorm(parametros[3] + parametros[4] * w) #probit
-  # y <-  rbinom(n = length(x), size = 1, prob = p)   ### QUEM E ESTE Y ??????????
-  
-  # 
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
 
   p.i <- ifelse(y == 0, pi0, pi1)
@@ -102,39 +90,15 @@ for(i in 1:R){
   uniformes <- runif(n, 0, 1)
 
   comparacao <- ifelse(uniformes < p.i, 1, 0)
-
-  ytil <- abs(y - comparacao)
-  
   #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
-
+  
   #### Passo 4: Gerar Ytil ####
   
-  # Generate the true binary response y_true, with covariate x
-  
-  # lm <-  beta0 + beta1 * x    ###  AQUI TEM QUE SER beta0 e beta 1.... POR QUE DIFERENTES BETAS? ok
-  # pr.probit <- pnorm(lm)
-  # y_true <- rbinom(n, 1, pr.probit)
-  # 
-  # # # Generate the misclassifed variable 
-  #  
-  # pr_pi0.probit <- pi0
-  # alpha0.probit <- rbinom(n, 1, pr_pi0.probit)  # alpha0=(Y=1|Y_T=0)
-  # 
-  # pr_pi1.probit <- 1 - pi1
-  # alpha1.probit <- rbinom(n, 1, pr_pi1.probit)  # alpha1=(Y=1|Y_T=1)
-  # y <- vector()  ### Y OBSERVADO!
-  # 
-  # for(i in 1:n){
-  # y[i] <- ifelse(y_true[i]==1, alpha1.probit[i], alpha0.probit[i])
-  # }
-  #
-  # QUAL A OUTRA MANEIRA DE GERAR Y ?
-  # Considerando a prob de sucesso P(Y=1|W) =  pi0 + (1 - pi0 - pi1) * E_x|W{\Phi(beta0 + beta1*x)}
-  
+  ytil <- abs(y - comparacao)
   
   #### Calculando a log-verossimilhanca para cada n ####
   m4_n <- function(theta) {
-    m4_loglik(theta, w, ytil)   #### POR QUE UTILIZA X??  ESSE NAO SE OBSERVA!!! (ok)
+    m4_loglik(theta, w, ytil)   
   }
   
   
