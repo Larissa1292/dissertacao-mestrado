@@ -4,6 +4,9 @@
 require(fExtremes)
 require(mvtnorm)
 require(sn)
+library("optimParallel")
+cl <- makeCluster(3)     # set the number of processor cores
+setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 
 #### Definindo os parâmetros iniciais ####
@@ -31,7 +34,8 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
-  
+  sig = 0.2
+  n = 5000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m4
@@ -48,7 +52,7 @@ m4_loglik <- function(theta, w, y){
   prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
   for (k in 1:n) {
-    esp <- 2 * pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
+    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
     prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
   }
   
@@ -72,19 +76,19 @@ emv.lambda <- rep(0, R)
 
 for(i in 1:R){
   print(i)
-  
+  print(Sys.time() - inicio)
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
   
   w <- runif(n,-4, 4)
-  
+  print(Sys.time() - inicio)  
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
   x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
-  
+  print(Sys.time() - inicio)
   #### Passo 3: Gerar y_i da Bernoulli ####
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
-
+  print(Sys.time() - inicio)
   p.i <- ifelse(y == 0, pi0, pi1)
 
   uniformes <- runif(n, 0, 1)
@@ -125,21 +129,23 @@ for(i in 1:R){
     m4_loglik(theta, w, ytil)   
   }
   
-  
+  print(Sys.time() - inicio)
   #### Passo 5: otimizacao ####
   
   tryCatch(  {
-    otimizacao <- optim(
+    otimizacao <- optimParallel(
       par = c(0.1, 0.2, 0, 1, 2),
-      fn = m4_n,
+      fn = m4_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
       lower = c(0, 0,-Inf,-Inf,-Inf),
-      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf)
+      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
+      w = w,
+      y = ytil
     )
     ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
     
-    
+    print(Sys.time() - inicio)
     if (otimizacao$convergence == 0) { #0: indica convergencia completa
       emv.pi0[i] = otimizacao$par[1]
       emv.pi1[i] = otimizacao$par[2]
@@ -191,7 +197,7 @@ lambdaEQM <- var(emv.lambda) + (lambdavies) ^ 2
 # Finalizando a contagem do tempo de execução do programa
 fim <- Sys.time()
 tempo <- fim - inicio
-
+tempo
 #### Lista com os resultados finais ####
 resultado <- list(
   Num_obs = n,
