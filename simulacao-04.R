@@ -4,7 +4,7 @@
 require(fExtremes)
 require(mvtnorm)
 require(sn)
-library("optimParallel")
+require(optimParallel)
 cl <- makeCluster(3)     # set the number of processor cores
 setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
@@ -17,8 +17,8 @@ pi0 <- 0.1
 pi1 <- 0.2
 lambda <- 2
 sig <- 0.2
-R <- 100 #num de replicas de Monte Carlo
-n <- 5000 # tamanho da amostra
+R <- 500 #num de replicas de Monte Carlo
+n <- 10000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -35,7 +35,7 @@ set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
   sig = 0.2
-  n = 5000
+  n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m4
