@@ -16,9 +16,9 @@ beta1 <- 1
 pi0 <- 0.1
 pi1 <- 0.2
 lambda <- 2
-sig <- 0.2
-R <- 500 #num de replicas de Monte Carlo
-#n <- 500 # tamanho da amostra
+sig <- 0
+R <- 10 #num de replicas de Monte Carlo
+n <- 500 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -33,18 +33,18 @@ inicio <- Sys.time()
 #fixando a semente
 set.seed(1992)
 
-m4_loglik <- function(theta, w, y){
-  sig = 0.2
-  n = 10000
+m2_loglik <- function(theta, w, y){
+  sig = 0
+  n = 500
   #### Definindo expressões e valores para a esp.condicional ####
   
-  #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m4
-  gama <- c(theta[4], theta[5] / sig) #Definir como vetor linha
-  mu.w <- cbind(theta[3] * rep(1, n),-theta[5] * w / sig)
-  media <- rep(0, 2)
-  covariancia <- diag(2) + (sig ^ 2 * (as.matrix(gama) %*% t(gama)))
-  up <- cbind(theta[3] + theta[4] * w, rep(0, n))
-  
+  #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m2
+  # gama <- c(theta[4], theta[5] / sig) #Definir como vetor linha
+  # mu.w <- cbind(theta[3] * rep(1, n),-theta[5] * w / sig)
+  # media <- rep(0, 2)
+  # covariancia <- diag(2) + (sig ^ 2 * (as.matrix(gama) %*% t(gama)))
+  # up <- cbind(theta[3] + theta[4] * w, rep(0, n))
+  # 
   ### Com base nas contas temos: up_i = mu.w + (gama * wi) = [Beta0 + Beta1 * wi  0]
   
   #### Definindo o resultado da Esperança Condicional ####
@@ -52,8 +52,9 @@ m4_loglik <- function(theta, w, y){
   prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
   for (k in 1:n) {
-    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
-    prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
+    #esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
+    probit <- pnorm(beta0 + beta1 * w[k])
+    prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * probit # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
   }
   
   ## Se prob = 1, assumir 0.999999999; Se prob = 0, assumir 0.000000001:
@@ -125,9 +126,9 @@ for(i in 1:R){
   
   
   #### Calculando a log-verossimilhanca para cada n ####
-  m4_n <- function(theta) {
-    m4_loglik(theta, w, ytil)   
-  }
+  # m2_n <- function(theta) {
+  #   m2_loglik(theta, w, ytil)   
+  # }
   
   print(Sys.time() - inicio)
   #### Passo 5: otimizacao ####
@@ -135,7 +136,7 @@ for(i in 1:R){
   tryCatch(  {
     otimizacao <- optimParallel(
       par = c(0.1, 0.2, 0, 1, 2),
-      fn = m4_loglik,
+      fn = m2_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
       lower = c(0, 0,-Inf,-Inf,-Inf),
