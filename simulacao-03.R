@@ -1,9 +1,15 @@
 # Simulação de MC para o modelo 3 (Somente com erro de medida)
 # Modelo somente com erro de medida, logo não tem erro de classificacao. Com isso, pi0 = 0 e pi1 = 0.
 
+## Verificar o programa
+
 require(fExtremes)
 require(mvtnorm)
 require(sn)
+library(optimParallel)
+cl <- makeCluster(3)     # set the number of processor cores
+setDefaultCluster(cl=cl) # set 'cl' as default cluster
+
 
 
 #### Definindo os parâmetros iniciais ####
@@ -14,10 +20,8 @@ pi0 <- 0.1
 pi1 <- 0.2
 lambda <- 2
 sig <- 0.2
-R <- 100 #num de replicas de Monte Carlo
-n <- 5000 # tamanho da amostra
-#ytil <- matrix(0, nrow = n, ncol = R)
-#opt1 <- matrix(0, R, n) #col = num de parametros a serem estimados
+R <- 500 #num de replicas de Monte Carlo
+n <- 10000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -32,11 +36,12 @@ inicio <- Sys.time()
 #fixando a semente
 set.seed(1992)
 
-m4_loglik <- function(theta, w, y){
+m3_loglik <- function(theta, w, y){
+  sig = 0.2
   
   #### Definindo expressões e valores para a esp.condicional ####
   
-  #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m4
+  #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m3
   gama <- c(theta[4], theta[5] / sig) #Definir como vetor linha
   mu.w <- cbind(theta[3] * rep(1, n),-theta[5] * w / sig)
   media <- rep(0, 2)
@@ -50,7 +55,7 @@ m4_loglik <- function(theta, w, y){
   prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
   for (k in 1:n) {
-    esp <- 2 * pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
+    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
     prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
   }
   
@@ -69,38 +74,35 @@ emv.beta0 <- rep(0, R)
 emv.beta1 <- rep(0, R)
 emv.lambda <- rep(0, R)
 
-#inicializando o contador de falhas
-#falhas <- 0
-
 #### Processo de  Monte Carlo ####
 # i <- 1 # p/ testar o programar sem rodar o 'for'
 
 for(i in 1:R){
   print(i)
-  
+  print(Sys.time() - inicio)
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
   
   w <- runif(n,-4, 4)
-  
+  print(Sys.time() - inicio)  
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
   x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
-  
+  print(Sys.time() - inicio)
   #### Passo 3: Gerar y_i da Bernoulli ####
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
-  
+  print(Sys.time() - inicio)
   p.i <- ifelse(y == 0, pi0, pi1)
   
   uniformes <- runif(n, 0, 1)
   
   comparacao <- ifelse(uniformes < p.i, 1, 0)
-  
-  ytil <- abs(y - comparacao)
-  
   #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
   
   #### Passo 4: Gerar Ytil ####
+  
+  ytil <- abs(y - comparacao)
+  
   
   # Generate the true binary response y_true, with covariate x
   
@@ -126,25 +128,28 @@ for(i in 1:R){
   
   
   #### Calculando a log-verossimilhanca para cada n ####
-  m4_n <- function(theta) {
-    m4_loglik(theta, w, ytil)   #### POR QUE UTILIZA X??  ESSE NAO SE OBSERVA!!! (ok)
+  m3_n <- function(theta) {
+    m3_loglik(theta, w, ytil)   
   }
   
-  
+  print(Sys.time() - inicio)
   #### Passo 5: otimizacao ####
   
   tryCatch(  {
-    otimizacao <- optim(
+    otimizacao <- optimParallel(
       par = c(0.1, 0.2, 0, 1, 2),
-      fn = m4_n,
+      fn = m3_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
       lower = c(0, 0,-Inf,-Inf,-Inf),
-      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf)
+      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
+      w = w,
+      y = ytil,
+      n = n
     )
     ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
     
-    
+    print(Sys.time() - inicio)
     if (otimizacao$convergence == 0) { #0: indica convergencia completa
       emv.pi0[i] = otimizacao$par[1]
       emv.pi1[i] = otimizacao$par[2]
@@ -196,7 +201,7 @@ lambdaEQM <- var(emv.lambda) + (lambdavies) ^ 2
 # Finalizando a contagem do tempo de execução do programa
 fim <- Sys.time()
 tempo <- fim - inicio
-
+tempo
 #### Lista com os resultados finais ####
 resultado <- list(
   Num_obs = n,
