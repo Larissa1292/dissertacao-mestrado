@@ -1,7 +1,6 @@
 # Simulação de MC para o modelo 3 (Somente com erro de medida)
 # Modelo somente com erro de medida, logo não tem erro de classificacao. Com isso, pi0 = 0 e pi1 = 0.
-
-## Verificar o programa
+# Rodar para R = 500 e n = 10000
 
 require(fExtremes)
 require(mvtnorm)
@@ -16,12 +15,12 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 beta0 <- 0
 beta1 <- 1
-pi0 <- 0.1
-pi1 <- 0.2
+pi0 <- 0
+pi1 <- 0
 lambda <- 2
 sig <- 0.2
-R <- 500 #num de replicas de Monte Carlo
-n <- 10000 # tamanho da amostra
+R <- 2 #num de replicas de Monte Carlo
+n <- 5000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -38,7 +37,7 @@ set.seed(1992)
 
 m3_loglik <- function(theta, w, y){
   sig = 0.2
-  
+  n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m3
@@ -56,7 +55,7 @@ m3_loglik <- function(theta, w, y){
   
   for (k in 1:n) {
     esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
-    prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
+    prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W, neste caso pi0 = pi1 = 0
   }
   
   ## Se prob = 1, assumir 0.999999999; Se prob = 0, assumir 0.000000001:
@@ -128,9 +127,9 @@ for(i in 1:R){
   
   
   #### Calculando a log-verossimilhanca para cada n ####
-  m3_n <- function(theta) {
-    m3_loglik(theta, w, ytil)   
-  }
+  # m3_n <- function(theta) {
+  #   m3_loglik(theta, w, ytil)
+  # }
   
   print(Sys.time() - inicio)
   #### Passo 5: otimizacao ####
@@ -144,8 +143,7 @@ for(i in 1:R){
       lower = c(0, 0,-Inf,-Inf,-Inf),
       upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
       w = w,
-      y = ytil,
-      n = n
+      y = ytil
     )
     ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
     
