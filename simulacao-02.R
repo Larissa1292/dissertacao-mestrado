@@ -1,5 +1,6 @@
 # Simulação de MC para o modelo 2 (Somente com erro de classificacao, ou seja, sig2 = 0)
 
+# Verificar código
 
 require(fExtremes)
 require(mvtnorm)
@@ -17,8 +18,8 @@ pi0 <- 0.1
 pi1 <- 0.2
 lambda <- 2
 sig <- 0
-R <- 10 #num de replicas de Monte Carlo
-n <- 500 # tamanho da amostra
+R <- 500 #num de replicas de Monte Carlo
+n <- 10000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -35,7 +36,7 @@ set.seed(1992)
 
 m2_loglik <- function(theta, w, y){
   sig = 0
-  n = 500
+  n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m2
@@ -47,11 +48,11 @@ m2_loglik <- function(theta, w, y){
   # 
   ### Com base nas contas temos: up_i = mu.w + (gama * wi) = [Beta0 + Beta1 * wi  0]
   
-  #### Definindo o resultado da Esperança Condicional ####
+  #### Definindo o resultado da funcao Probit ####
   
   prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
-  for (k in 1:n) {
+  for (k in 1:n){
     #esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
     probit <- pnorm(beta0 + beta1 * w[k])
     prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * probit # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
