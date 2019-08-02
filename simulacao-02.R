@@ -1,5 +1,8 @@
 # Simulação de MC para o modelo 2 (Somente com erro de classificacao, ou seja, sig2 = 0)
 
+# Rodar para R = 100 e n = 5000
+# Rodar para R = 500 e n = 10000
+
 # Verificar código
 
 require(fExtremes)
@@ -18,8 +21,8 @@ pi0 <- 0.1
 pi1 <- 0.2
 lambda <- 2
 sig <- 0
-R <- 500 #num de replicas de Monte Carlo
-n <- 10000 # tamanho da amostra
+R <- 100 #num de replicas de Monte Carlo
+n <- 5000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -27,7 +30,7 @@ parametros <- c(pi0, pi1, beta0, beta1, lambda)
 
 #### Definindo a função de Log-Verossimilhança ####
 
-#Modelo 4: Há erro de medição e de classificação
+#Modelo 2: Há somente erro de classificação
 
 inicio <- Sys.time()
 
@@ -35,8 +38,9 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m2_loglik <- function(theta, w, y){
-  sig = 0
-  n = 10000
+  #sig = 0
+  #n = 1000
+  
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m2
@@ -50,13 +54,11 @@ m2_loglik <- function(theta, w, y){
   
   #### Definindo o resultado da funcao Probit ####
   
-  prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
-  
-  for (k in 1:n){
-    #esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
-    probit <- pnorm(beta0 + beta1 * w[k])
-    prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * probit # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
-  }
+  #prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
+  #esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
+  probit <- pnorm(beta0 + beta1 * w)
+  prob <- theta[1] + (1 - theta[1] - theta[2]) * probit # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
+
   
   ## Se prob = 1, assumir 0.999999999; Se prob = 0, assumir 0.000000001:
   p <- ifelse(prob == 1, 0.999999999, prob)
@@ -101,30 +103,6 @@ for(i in 1:R){
   #### Passo 4: Gerar Ytil ####
   
   ytil <- abs(y - comparacao)
-  
-  
-  # Generate the true binary response y_true, with covariate x
-  
-  # lm <-  beta0 + beta1 * x    ###  AQUI TEM QUE SER beta0 e beta 1.... POR QUE DIFERENTES BETAS? ok
-  # pr.probit <- pnorm(lm)
-  # y_true <- rbinom(n, 1, pr.probit)
-  # 
-  # # # Generate the misclassifed variable 
-  #  
-  # pr_pi0.probit <- pi0
-  # alpha0.probit <- rbinom(n, 1, pr_pi0.probit)  # alpha0=(Y=1|Y_T=0)
-  # 
-  # pr_pi1.probit <- 1 - pi1
-  # alpha1.probit <- rbinom(n, 1, pr_pi1.probit)  # alpha1=(Y=1|Y_T=1)
-  # y <- vector()  ### Y OBSERVADO!
-  # 
-  # for(i in 1:n){
-  # y[i] <- ifelse(y_true[i]==1, alpha1.probit[i], alpha0.probit[i])
-  # }
-  #
-  # QUAL A OUTRA MANEIRA DE GERAR Y ?
-  # Considerando a prob de sucesso P(Y=1|W) =  pi0 + (1 - pi0 - pi1) * E_x|W{\Phi(beta0 + beta1*x)}
-  
   
   #### Calculando a log-verossimilhanca para cada n ####
   # m2_n <- function(theta) {
@@ -201,6 +179,7 @@ fim <- Sys.time()
 tempo <- fim - inicio
 tempo
 #### Lista com os resultados finais ####
+
 resultado <- list(
   Num_obs = n,
   Replicas = R,
