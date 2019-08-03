@@ -1,5 +1,7 @@
 # Simulação de MC para o modelo 4 (Com erro de classificacao e erro de medida)
 
+# Testar para R = 500 e n = 10000, para (pi0 = 0.1, pi1 = 0.2, beta0 = 0, beta1 = 1, lambda = 2, sig = 0.2) OK!
+# Testar para R = 500 e n = 10000, para (pi0 = 0.05, pi1 = 0.05, beta0 = 0, beta1 = 1, lambda = 0.001, sig2 = 0.01)
 
 require(fExtremes)
 require(mvtnorm)
@@ -13,10 +15,10 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 beta0 <- 0
 beta1 <- 1
-pi0 <- 0.1
-pi1 <- 0.2
-lambda <- 2
-sig <- 0.2
+pi0 <- 0.05
+pi1 <- 0.05
+lambda <- 0.001
+sig <- 0.1 # => sig² = 0.01
 R <- 500 #num de replicas de Monte Carlo
 n <- 10000 # tamanho da amostra
 
@@ -34,7 +36,7 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
-  sig = 0.2
+  sig = 0.1
   n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
@@ -134,7 +136,7 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      par = c(0.1, 0.2, 0, 1, 2),
+      par = c(0.05, 0.05, 0, 1, 0.001),
       fn = m4_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
@@ -169,6 +171,13 @@ pi1medio <- mean(emv.pi1)
 beta0medio <- mean(emv.beta0)
 beta1medio <- mean(emv.beta1)
 lambdamedio <- mean(emv.lambda)
+
+# calculando o erro padrão das estimativas de cada parâmetro
+pi0sd <- sd(emv.pi0)
+pi1sd <- sd(emv.pi1)
+beta0sd <- sd(emv.beta0)
+beta1sd <- sd(emv.beta1)
+lambdasd <- sd(emv.lambda)
 
 #### Calculando viés e erro quadratico medio (eqm) ####
 # calculando o viés (vies = media - valor verdadeiro do parametro)
@@ -212,6 +221,11 @@ resultado <- list(
   Beta0_est_medio = beta0medio,
   Beta1_est_medio = beta1medio,
   Lambda_est_medio = lambdamedio,
+  Pi0_sd = pi0sd,
+  P1_sd = pi1sd,
+  Beta0_sd = beta0sd,
+  Beta1_sd = beta1sd,
+  Lambda_sd = lambdasd,
   Pi0_est_vies = pi0vies,
   Pi1_est_vies = pi1vies,
   Beta0_est_vies = beta0vies,
