@@ -1,5 +1,7 @@
 # Simulação de MC para o modelo 3 (Somente com erro de medida)
 # Modelo somente com erro de medida, logo não tem erro de classificacao. Com isso, pi0 = 0 e pi1 = 0.
+
+# Rodar para R = 100 e n = 5000
 # Rodar para R = 500 e n = 10000
 
 require(fExtremes)
@@ -19,7 +21,7 @@ pi0 <- 0
 pi1 <- 0
 lambda <- 2
 sig <- 0.2
-R <- 2 #num de replicas de Monte Carlo
+R <- 100 #num de replicas de Monte Carlo
 n <- 5000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
@@ -37,7 +39,7 @@ set.seed(1992)
 
 m3_loglik <- function(theta, w, y){
   sig = 0.2
-  n = 10000
+  n = 5000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m3
@@ -166,22 +168,29 @@ for(i in 1:R){
 # fim Monte Carlo
 
 # calculando as médias das estimativas de cada parâmetro
-pi0medio <- mean(emv.pi0)
-pi1medio <- mean(emv.pi1)
+#pi0medio <- mean(emv.pi0)
+#pi1medio <- mean(emv.pi1)
 beta0medio <- mean(emv.beta0)
 beta1medio <- mean(emv.beta1)
 lambdamedio <- mean(emv.lambda)
 
+# calculando o erro padrão das estimativas de cada parâmetro
+#pi0sd <- sd(emv.pi0)
+#pi1sd <- sd(emv.pi1)
+beta0sd <- sd(emv.beta0)
+beta1sd <- sd(emv.beta1)
+lambdasd <- sd(emv.lambda)
+
 #### Calculando viés e erro quadratico medio (eqm) ####
 # calculando o viés (vies = media - valor verdadeiro do parametro)
-pi0vies <- pi0medio - pi0
-pi1vies <- pi1medio - pi1
+#pi0vies <- pi0medio - pi0
+#pi1vies <- pi1medio - pi1
 beta0vies <- beta0medio - beta0
 beta1vies <- beta1medio - beta1
 lambdavies <- lambdamedio - lambda
 
-pi0viesrel <- pi0vies / pi0
-pi1viesrel <- pi1vies / pi1
+#pi0viesrel <- pi0vies / pi0
+#pi1viesrel <- pi1vies / pi1
 beta0viesrel <- beta0vies / beta0
 beta1viesrel <- beta1vies / beta1
 lambdaviesrel <- lambdavies / lambda
@@ -190,8 +199,8 @@ lambdaviesrel <- lambdavies / lambda
 # EQM(theta_chapeu) = Var(theta_chaeu) + b²(theta), b²(): viés
 # b²(theta) = E(theta_chapeu) - theta
 
-pi0EQM <- var(emv.pi0) + (pi0vies) ^ 2
-pi1EQM <- var(emv.pi1) + (pi1vies) ^ 2
+#pi0EQM <- var(emv.pi0) + (pi0vies) ^ 2
+#pi1EQM <- var(emv.pi1) + (pi1vies) ^ 2
 beta0EQM <- var(emv.beta0) + (beta0vies) ^ 2
 beta1EQM <- var(emv.beta1) + (beta1vies) ^ 2
 lambdaEQM <- var(emv.lambda) + (lambdavies) ^ 2
@@ -204,28 +213,33 @@ tempo
 resultado <- list(
   Num_obs = n,
   Replicas = R,
-  Pi0 = pi0,
-  Pi1 = pi1,
+  #Pi0 = pi0,
+  #Pi1 = pi1,
   Beta_0 = beta0,
   Beta_1 = beta1,
   Lambda = lambda,
-  Pi0_est_medio = pi0medio,
-  Pi1_est_medio = pi1medio,
+  #Pi0_est_medio = pi0medio,
+  #Pi1_est_medio = pi1medio,
   Beta0_est_medio = beta0medio,
   Beta1_est_medio = beta1medio,
   Lambda_est_medio = lambdamedio,
-  Pi0_est_vies = pi0vies,
-  Pi1_est_vies = pi1vies,
+  #Pi0_sd = pi0sd,
+  #P1_sd = pi1sd,
+  Beta0_sd = beta0sd,
+  Beta1_sd = beta1sd,
+  Lambda_sd = lambdasd,
+  #Pi0_est_vies = pi0vies,
+  #Pi1_est_vies = pi1vies,
   Beta0_est_vies = beta0vies,
   Beta1_est_vies = beta1vies,
   Lambda_est_vies = lambdavies,
-  Pi0_est_vies_rel = pi0viesrel,
-  Pi1_est_vies_rel = pi1viesrel,
+  #Pi0_est_vies_rel = pi0viesrel,
+  #Pi1_est_vies_rel = pi1viesrel,
   Beta0_est_vies_rel = beta0viesrel,
   Beta1_est_vies_rel = beta1viesrel,
   Lambda_est_vies_rel = lambdaviesrel,
-  EQM_Pi0 = pi0EQM,
-  EQM_Pi1 = pi1EQM,
+  #EQM_Pi0 = pi0EQM,
+  #EQM_Pi1 = pi1EQM,
   EQM_Beta0 = beta0EQM,
   EQM_Beta1 = beta1EQM, 
   EQM_Lambda = lambdaEQM,
