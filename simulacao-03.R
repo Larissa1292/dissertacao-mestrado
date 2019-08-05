@@ -2,7 +2,7 @@
 # Modelo somente com erro de medida, logo não tem erro de classificacao. Com isso, pi0 = 0 e pi1 = 0.
 
 # Rodar para R = 100 e n = 5000 ok
-# Rodar para R = 500 e n = 10000
+# Rodar para R = 500 e n = 10000 ok
 
 require(fExtremes)
 require(mvtnorm)
@@ -21,8 +21,8 @@ pi0 <- 0
 pi1 <- 0
 lambda <- 2
 sig <- 0.2
-R <- 500 #num de replicas de Monte Carlo
-n <- 10000 # tamanho da amostra
+R <- 100 #num de replicas de Monte Carlo
+n <- 5000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -39,7 +39,7 @@ set.seed(1992)
 
 m3_loglik <- function(theta, w, y){
   sig = 0.2
-  n = 10000
+  n = 5000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m3
