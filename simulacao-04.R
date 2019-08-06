@@ -1,7 +1,7 @@
 # Simulação de MC para o modelo 4 (Com erro de classificacao e erro de medida)
 
 # Testar para R = 500 e n = 10000, para (pi0 = 0.1, pi1 = 0.2, beta0 = 0, beta1 = 1, lambda = 2, sig = 0.2) OK!
-# Testar para R = 500 e n = 10000, para (pi0 = 0.05, pi1 = 0.05, beta0 = 0, beta1 = 1, lambda = 0.001, sig2 = 0.01)
+# Testar para R = 500 e n = 10000, para (pi0 = 0.05, pi1 = 0.05, beta0 = 0, beta1 = 1, lambda = 0.001, sig2 = 0.01) OK!
 
 require(fExtremes)
 require(mvtnorm)
@@ -127,9 +127,9 @@ for(i in 1:R){
   
   
   #### Calculando a log-verossimilhanca para cada n ####
-  m4_n <- function(theta) {
-    m4_loglik(theta, w, ytil)   
-  }
+  # m4_n <- function(theta) {
+  #   m4_loglik(theta, w, ytil)   
+  # }
   
   print(Sys.time() - inicio)
   #### Passo 5: otimizacao ####
@@ -247,3 +247,6 @@ resultado <- list(
 
 # Imprimindo os resultados
 resultado
+
+# Salvando os resultados em um arquivo
+write.csv(x = resultado, file = "m4_r500_n10000_p05_p05_l001.csv")
