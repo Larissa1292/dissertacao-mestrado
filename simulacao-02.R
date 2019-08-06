@@ -1,9 +1,10 @@
 # Simulação de MC para o modelo 2 (Somente com erro de classificacao, ou seja, sig2 = 0)
 
+
 # Rodar para R = 100 e n = 5000
 # Rodar para R = 500 e n = 10000
 
-# Verificar código
+# Verificar código!
 
 require(fExtremes)
 require(mvtnorm)
