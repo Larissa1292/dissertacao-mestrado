@@ -14,18 +14,18 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 #### Definindo os parâmetros iniciais ####
 
+pi0 <- 0.1
+pi1 <- 0.2
 beta0 <- 0
 beta1 <- 1
-pi0 <- 0.05
-pi1 <- 0.05
-lambda <- 0.001
-sig <- 0.1 # => sig² = 0.01
-R <- 500 #num de replicas de Monte Carlo
-n <- 10000 # tamanho da amostra
+lambda <- 2
+sig <- 0.2
+R <- 10 #num de replicas de Monte Carlo
+n <- 5000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
-parametros <- c(pi0, pi1, beta0, beta1, lambda)
+parametros <- c(pi0, pi1, beta0, beta1, lambda, sig)
 
 #### Definindo a função de Log-Verossimilhança ####
 
@@ -37,15 +37,15 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
-  sig = 0.1
+  #sig = 0.1
   n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
-  #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m4
-  gama <- c(theta[4], theta[5] / sig) #Definir como vetor linha
-  mu.w <- cbind(theta[3] * rep(1, n),-theta[5] * w / sig)
+  #theta <- c(0.1, 0.2, 0, 1, 2, 0.2) #vetor para testar sem precisar rodar a funcao m4
+  gama <- c(theta[4], theta[5] / theta[6]) #Definir como vetor linha
+  mu.w <- cbind(theta[3] * rep(1, n),-theta[5] * w / theta[6])
   media <- rep(0, 2)
-  covariancia <- diag(2) + (sig ^ 2 * (as.matrix(gama) %*% t(gama)))
+  covariancia <- diag(2) + (theta[6] ^ 2 * (as.matrix(gama) %*% t(gama)))
   up <- cbind(theta[3] + theta[4] * w, rep(0, n))
   
   ### Com base nas contas temos: up_i = mu.w + (gama * wi) = [Beta0 + Beta1 * wi  0]
@@ -54,7 +54,7 @@ m4_loglik <- function(theta, w, y){
   
   prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
-  for (k in 1:n) {
+  for (k in 1:n){
     esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
     prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
   }
@@ -73,6 +73,7 @@ emv.pi1 <- rep(0, R)
 emv.beta0 <- rep(0, R)
 emv.beta1 <- rep(0, R)
 emv.lambda <- rep(0, R)
+emv.sig <- rep(0, R)
 
 #### Processo de  Monte Carlo ####
 # i <- 1 # p/ testar o programar sem rodar o 'for'
@@ -86,7 +87,7 @@ for(i in 1:R){
   print(Sys.time() - inicio)  
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
-  x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
+  x <- rsn(n = n, xi = w, omega = parametros[6] ^ 2, alpha = parametros[5])
   print(Sys.time() - inicio)
   #### Passo 3: Gerar y_i da Bernoulli ####
   
@@ -102,47 +103,18 @@ for(i in 1:R){
   #### Passo 4: Gerar Ytil ####
   
   ytil <- abs(y - comparacao)
-  
-  
-  # Generate the true binary response y_true, with covariate x
-  
-  # lm <-  beta0 + beta1 * x    ###  AQUI TEM QUE SER beta0 e beta 1.... POR QUE DIFERENTES BETAS? ok
-  # pr.probit <- pnorm(lm)
-  # y_true <- rbinom(n, 1, pr.probit)
-  # 
-  # # # Generate the misclassifed variable 
-  #  
-  # pr_pi0.probit <- pi0
-  # alpha0.probit <- rbinom(n, 1, pr_pi0.probit)  # alpha0=(Y=1|Y_T=0)
-  # 
-  # pr_pi1.probit <- 1 - pi1
-  # alpha1.probit <- rbinom(n, 1, pr_pi1.probit)  # alpha1=(Y=1|Y_T=1)
-  # y <- vector()  ### Y OBSERVADO!
-  # 
-  # for(i in 1:n){
-  # y[i] <- ifelse(y_true[i]==1, alpha1.probit[i], alpha0.probit[i])
-  # }
-  #
-  # QUAL A OUTRA MANEIRA DE GERAR Y ?
-  # Considerando a prob de sucesso P(Y=1|W) =  pi0 + (1 - pi0 - pi1) * E_x|W{\Phi(beta0 + beta1*x)}
-  
-  
-  #### Calculando a log-verossimilhanca para cada n ####
-  # m4_n <- function(theta) {
-  #   m4_loglik(theta, w, ytil)   
-  # }
-  
   print(Sys.time() - inicio)
+  
   #### Passo 5: otimizacao ####
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      par = c(0.05, 0.05, 0, 1, 0.001),
+      par = c(0.1, 0.2, 0, 1, 2, 0.2),
       fn = m4_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
-      lower = c(0, 0,-Inf,-Inf,-Inf),
-      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
+      lower = c(0, 0,-Inf,-Inf,-Inf, 0),
+      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf, Inf),
       w = w,
       y = ytil
     )
@@ -155,6 +127,7 @@ for(i in 1:R){
       emv.beta0[i] = otimizacao$par[3]
       emv.beta1[i] = otimizacao$par[4]
       emv.lambda[i] = otimizacao$par[5]
+      emv.sig[i] = otimizacao$par[6]
     }
     #else{
     # falhas = falhas + 1
@@ -172,6 +145,7 @@ pi1medio <- mean(emv.pi1)
 beta0medio <- mean(emv.beta0)
 beta1medio <- mean(emv.beta1)
 lambdamedio <- mean(emv.lambda)
+sigmedio <- mean(emv.sig)
 
 # calculando o erro padrão das estimativas de cada parâmetro
 pi0sd <- sd(emv.pi0)
@@ -179,6 +153,7 @@ pi1sd <- sd(emv.pi1)
 beta0sd <- sd(emv.beta0)
 beta1sd <- sd(emv.beta1)
 lambdasd <- sd(emv.lambda)
+sigsd <- sd(emv.sig)
 
 #### Calculando viés e erro quadratico medio (eqm) ####
 # calculando o viés (vies = media - valor verdadeiro do parametro)
@@ -187,12 +162,14 @@ pi1vies <- pi1medio - pi1
 beta0vies <- beta0medio - beta0
 beta1vies <- beta1medio - beta1
 lambdavies <- lambdamedio - lambda
+sigvies <- sigmedio - sig
 
 pi0viesrel <- pi0vies / pi0
 pi1viesrel <- pi1vies / pi1
 beta0viesrel <- beta0vies / beta0
 beta1viesrel <- beta1vies / beta1
 lambdaviesrel <- lambdavies / lambda
+sigviesrel <- sigvies / sig
 
 ##### EQM ####
 # EQM(theta_chapeu) = Var(theta_chaeu) + b²(theta), b²(): viés
@@ -203,6 +180,7 @@ pi1EQM <- var(emv.pi1) + (pi1vies) ^ 2
 beta0EQM <- var(emv.beta0) + (beta0vies) ^ 2
 beta1EQM <- var(emv.beta1) + (beta1vies) ^ 2
 lambdaEQM <- var(emv.lambda) + (lambdavies) ^ 2
+sigEQM <- var(emv.sig) + (sigvies) ^ 2
 
 # Finalizando a contagem do tempo de execução do programa
 fim <- Sys.time()
@@ -217,31 +195,37 @@ resultado <- list(
   Beta_0 = beta0,
   Beta_1 = beta1,
   Lambda = lambda,
+  Sigma = sig,
   Pi0_est_medio = pi0medio,
   Pi1_est_medio = pi1medio,
   Beta0_est_medio = beta0medio,
   Beta1_est_medio = beta1medio,
   Lambda_est_medio = lambdamedio,
+  Sigma_est_medio = sigmedio,
   Pi0_sd = pi0sd,
   P1_sd = pi1sd,
   Beta0_sd = beta0sd,
   Beta1_sd = beta1sd,
   Lambda_sd = lambdasd,
+  Sigma_sd = sigsd,
   Pi0_est_vies = pi0vies,
   Pi1_est_vies = pi1vies,
   Beta0_est_vies = beta0vies,
   Beta1_est_vies = beta1vies,
   Lambda_est_vies = lambdavies,
+  Sigma_est_vies = sigvies,
   Pi0_est_vies_rel = pi0viesrel,
   Pi1_est_vies_rel = pi1viesrel,
   Beta0_est_vies_rel = beta0viesrel,
   Beta1_est_vies_rel = beta1viesrel,
   Lambda_est_vies_rel = lambdaviesrel,
+  Sigma_est_vies_rel = sigviesrel,
   EQM_Pi0 = pi0EQM,
   EQM_Pi1 = pi1EQM,
   EQM_Beta0 = beta0EQM,
   EQM_Beta1 = beta1EQM, 
   EQM_Lambda = lambdaEQM,
+  EQM_Sigma = sigEQM,
   # Num_Falhas = falhas,
   Tempo_Execução = tempo
 )
@@ -250,4 +234,4 @@ resultado <- list(
 resultado
 
 # Salvando os resultados em um arquivo
-write.csv(x = resultado, file = "m4_r500_n10000_p05_p05_l001.csv")
+write.csv(x = resultado, file = "m4_r100_n10000_sig_desc.csv")
