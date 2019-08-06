@@ -249,3 +249,6 @@ resultado <- list(
 
 # Imprimindo os resultados
 resultado
+
+# Salvando os resultados em um arquivo
+write.csv(x = resultado, file = "m3_r100_n5000.csv")
