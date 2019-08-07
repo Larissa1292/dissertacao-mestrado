@@ -1,27 +1,32 @@
+argumentos = commandArgs(trailingOnly = TRUE)
+
 # Simulação de MC para o modelo 4 (Com erro de classificacao e erro de medida)
 
 # Testar para R = 500 e n = 10000, para (pi0 = 0.1, pi1 = 0.2, beta0 = 0, beta1 = 1, lambda = 2, sig = 0.2) OK!
 # Testar para R = 500 e n = 10000, para (pi0 = 0.05, pi1 = 0.05, beta0 = 0, beta1 = 1, lambda = 0.001, sig2 = 0.01 => sig = 0.1) OK!
 # Testar para sig² desconhecido
 
+# Chamando Pacotes
 require(fExtremes)
 require(mvtnorm)
 require(sn)
 require(optimParallel)
+
+# Criando clusters para paralelizar a otimização
 cl <- makeCluster(3)     # set the number of processor cores
-setDefaultCluster(cl=cl) # set 'cl' as default cluster
+setDefaultCluster(cl = cl) # set 'cl' as default cluster
 
 
 #### Definindo os parâmetros iniciais ####
 
-pi0 <- 0.1
-pi1 <- 0.2
-beta0 <- 0
-beta1 <- 1
-lambda <- 2
-sig <- 0.2
-R <- 10 #num de replicas de Monte Carlo
-n <- 5000 # tamanho da amostra
+pi0 <- as.numeric(argumentos[1])
+pi1 <- as.numeric(argumentos[2])
+beta0 <- as.numeric(argumentos[3])
+beta1 <- as.numeric(argumentos[4])
+lambda <- as.numeric(argumentos[5])
+sig <- as.numeric(argumentos[6])
+R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
+n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -36,14 +41,14 @@ inicio <- Sys.time()
 #fixando a semente
 set.seed(1992)
 
-m4_loglik <- function(theta, w, y){
+m4_loglik <- function(theta, w, y) {
   #sig = 0.1
   n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2, 0.2) #vetor para testar sem precisar rodar a funcao m4
   gama <- c(theta[4], theta[5] / theta[6]) #Definir como vetor linha
-  mu.w <- cbind(theta[3] * rep(1, n),-theta[5] * w / theta[6])
+  mu.w <- cbind(theta[3] * rep(1, n), -theta[5] * w / theta[6])
   media <- rep(0, 2)
   covariancia <- diag(2) + (theta[6] ^ 2 * (as.matrix(gama) %*% t(gama)))
   up <- cbind(theta[3] + theta[4] * w, rep(0, n))
@@ -52,19 +57,27 @@ m4_loglik <- function(theta, w, y){
   
   #### Definindo o resultado da Esperança Condicional ####
   
-  prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
+  prob <-
+    vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
-  for (k in 1:n){
-    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
-    prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
+  for (k in 1:n) {
+    esp <- 2 * mvtnorm::pmvnorm(
+        mean = media,
+        sigma = covariancia,
+        lower = c(-Inf, -Inf),
+        upper = up[k,]
+      )
+    prob[k] <-
+      theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
   }
   
   ## Se prob = 1, assumir 0.999999999; Se prob = 0, assumir 0.000000001:
   p <- ifelse(prob == 1, 0.999999999, prob)
   p <- ifelse(prob == 0, 0.000000001, prob)
-  loglike <- sum(y * log(p)) + sum((1 - y) * log(1 - p)) #Log-verossimilhanca
+  loglike <-
+    sum(y * log(p)) + sum((1 - y) * log(1 - p)) #Log-verossimilhanca
   return(loglike)
-}  
+}
 
 
 #vetor de zeros para armazenar as estimativas de cada parâmetro
@@ -78,20 +91,31 @@ emv.sig <- rep(0, R)
 #### Processo de  Monte Carlo ####
 # i <- 1 # p/ testar o programar sem rodar o 'for'
 
-for(i in 1:R){
+for (i in 1:R) {
   print(i)
   print(Sys.time() - inicio)
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
   
-  w <- runif(n,-4, 4)
-  print(Sys.time() - inicio)  
+  w <- runif(n, -4, 4)
+  print(Sys.time() - inicio)
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
-  x <- rsn(n = n, xi = w, omega = parametros[6] ^ 2, alpha = parametros[5])
+  x <-
+    rsn(
+      n = n,
+      xi = w,
+      omega = parametros[6] ^ 2,
+      alpha = parametros[5]
+    )
   print(Sys.time() - inicio)
   #### Passo 3: Gerar y_i da Bernoulli ####
   
-  y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
+  y <-
+    rbinom(
+      n = n,
+      size = 1,
+      prob = pnorm(parametros[3] + parametros[4] * x)
+    )
   print(Sys.time() - inicio)
   p.i <- ifelse(y == 0, pi0, pi1)
   
@@ -107,13 +131,13 @@ for(i in 1:R){
   
   #### Passo 5: otimizacao ####
   
-  tryCatch(  {
+  tryCatch({
     otimizacao <- optimParallel(
       par = c(0.1, 0.2, 0, 1, 2, 0.2),
       fn = m4_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
-      lower = c(0, 0,-Inf,-Inf,-Inf, 0),
+      lower = c(0, 0, -Inf, -Inf, -Inf, 0),
       upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf, Inf),
       w = w,
       y = ytil
@@ -121,7 +145,8 @@ for(i in 1:R){
     ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
     
     print(Sys.time() - inicio)
-    if (otimizacao$convergence == 0) { #0: indica convergencia completa
+    if (otimizacao$convergence == 0) {
+      #0: indica convergencia completa
       emv.pi0[i] = otimizacao$par[1]
       emv.pi1[i] = otimizacao$par[2]
       emv.beta0[i] = otimizacao$par[3]
@@ -223,7 +248,7 @@ resultado <- list(
   EQM_Pi0 = pi0EQM,
   EQM_Pi1 = pi1EQM,
   EQM_Beta0 = beta0EQM,
-  EQM_Beta1 = beta1EQM, 
+  EQM_Beta1 = beta1EQM,
   EQM_Lambda = lambdaEQM,
   EQM_Sigma = sigEQM,
   # Num_Falhas = falhas,
@@ -234,4 +259,4 @@ resultado <- list(
 resultado
 
 # Salvando os resultados em um arquivo
-write.csv(x = resultado, file = "m4_r100_n10000_sig_desc.csv")
+write.csv(x = resultado, file = paste0("m4_r",R,"_n",n,"_sig_desc.csv"))
