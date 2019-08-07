@@ -37,13 +37,13 @@ inicio <- Sys.time()
 #fixando a semente
 set.seed(1992)
 
-m2_loglik <- function(theta, w, y){
+m1_loglik <- function(theta, w, y){
   #sig = 0
   #n = 1000
   
   #### Definindo expressões e valores para a esp.condicional ####
   
-  #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m2
+  #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m1
   # gama <- c(theta[4], theta[5] / sig) #Definir como vetor linha
   # mu.w <- cbind(theta[3] * rep(1, n),-theta[5] * w / sig)
   # media <- rep(0, 2)
@@ -105,8 +105,8 @@ for(i in 1:R){
   ytil <- abs(y - comparacao)
   
   #### Calculando a log-verossimilhanca para cada n ####
-  # m2_n <- function(theta) {
-  #   m2_loglik(theta, w, ytil)   
+  # m1_n <- function(theta) {
+  #   m1_loglik(theta, w, ytil)   
   # }
   
   print(Sys.time() - inicio)
@@ -115,7 +115,7 @@ for(i in 1:R){
   tryCatch(  {
     otimizacao <- optimParallel(
       par = c(0, 1),
-      fn = m2_loglik,
+      fn = m1_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
       lower = c(-Inf,-Inf),
@@ -221,3 +221,6 @@ resultado <- list(
 
 # Imprimindo os resultados
 resultado
+
+# Salvando os resultados em um arquivo
+write.csv(x = resultado, file = paste0("m1_r", R,"_n", n, "_l", lambda,"_sig", sig,".csv"))
