@@ -1,3 +1,5 @@
+argumentos = commandArgs(trailingOnly = TRUE)
+
 # Simulação de MC para o modelo 3 (Somente com erro de medida)
 # Modelo somente com erro de medida, logo não tem erro de classificacao. Com isso, pi0 = 0 e pi1 = 0.
 
@@ -15,14 +17,14 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 #### Definindo os parâmetros iniciais ####
 
-beta0 <- 0
-beta1 <- 1
-pi0 <- 0
-pi1 <- 0
-lambda <- 2
-sig <- 0.2
-R <- 100 #num de replicas de Monte Carlo
-n <- 5000 # tamanho da amostra
+pi0 <- as.numeric(argumentos[1])
+pi1 <- as.numeric(argumentos[1])
+beta0 <- as.numeric(argumentos[1])
+beta1 <- as.numeric(argumentos[1])
+lambda <- as.numeric(argumentos[1])
+sig <- as.numeric(argumentos[1])
+R <- as.numeric(argumentos[1]) #num de replicas de Monte Carlo
+n <- as.numeric(argumentos[1]) # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
