@@ -1,3 +1,4 @@
+argumentos <- commandArgs(trailingOnly = TRUE)
 # Simulação de MC para o modelo 2 (Somente com erro de classificacao, ou seja, sig2 = 0)
 
 
@@ -16,15 +17,14 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 #### Definindo os parâmetros iniciais ####
 
-pi0 <- 0.1
-pi1 <- 0.2
-beta0 <- 0
-beta1 <- 1
-lambda <- 2
-sig <- 0
-R <- 100 #num de replicas de Monte Carlo
-n <- 5000 # tamanho da amostra
-
+pi0 <- as.numeric(argumentos[1])
+pi1 <- as.numeric(argumentos[2])
+beta0 <- as.numeric(argumentos[3])
+beta1 <- as.numeric(argumentos[4])
+lambda <- as.numeric(argumentos[5])
+sig <- as.numeric(argumentos[6])
+R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
+n <- as.numeric(argumentos[8]) # tamanho da amostra
 #### Vetor de parâmetros ####
 
 parametros <- c(pi0, pi1, beta0, beta1, lambda)
@@ -227,3 +227,7 @@ resultado <- list(
 
 # Imprimindo os resultados
 resultado
+
+# Salvando os resultados em um arquivo
+write.csv(x = resultado, file = paste0("m2_r", R,"_n", n, "_l", lambda,"_sig", sig,".csv"))
+
