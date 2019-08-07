@@ -1,9 +1,9 @@
+argumentos <- commandArgs(trailingOnly = TRUE)
+
 ### Simulação de MC para o modelo 1 (Sem erro de classificacao e sem erro de medida)
 # Modelo sem erro de medida e sem erro de classificação, logo pi0 = pi1 = 0 e sig = 0.
 # Rodar para R = 100 e n = 5000
 # Rodar para R = 500 e n = 10000
-
-# Verificar código!
 
 require(fExtremes)
 require(mvtnorm)
@@ -15,14 +15,14 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 #### Definindo os parâmetros iniciais ####
 
-pi0 <- 0
-pi1 <- 0
-beta0 <- 0
-beta1 <- 1
-lambda <- 2
-sig <- 0
-R <- 100 #num de replicas de Monte Carlo
-n <- 1000 # tamanho da amostra
+pi0 <- as.numeric(argumentos[1])
+pi1 <- as.numeric(argumentos[2])
+beta0 <- as.numeric(argumentos[3])
+beta1 <- as.numeric(argumentos[4])
+lambda <- as.numeric(argumentos[5])
+sig <- as.numeric(argumentos[6])
+R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
+n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
