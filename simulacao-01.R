@@ -150,6 +150,13 @@ beta0medio <- mean(emv.beta0)
 beta1medio <- mean(emv.beta1)
 #lambdamedio <- mean(emv.lambda)
 
+# calculando o erro padrão das estimativas de cada parâmetro
+#pi0sd <- sd(emv.pi0)
+#pi1sd <- sd(emv.pi1)
+beta0sd <- sd(emv.beta0)
+beta1sd <- sd(emv.beta1)
+#lambdasd <- sd(emv.lambda)
+
 #### Calculando viés e erro quadratico medio (eqm) ####
 # calculando o viés (vies = media - valor verdadeiro do parametro)
 #pi0vies <- pi0medio - pi0
