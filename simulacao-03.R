@@ -18,13 +18,13 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 #### Definindo os parâmetros iniciais ####
 
 pi0 <- as.numeric(argumentos[1])
-pi1 <- as.numeric(argumentos[1])
-beta0 <- as.numeric(argumentos[1])
-beta1 <- as.numeric(argumentos[1])
-lambda <- as.numeric(argumentos[1])
-sig <- as.numeric(argumentos[1])
-R <- as.numeric(argumentos[1]) #num de replicas de Monte Carlo
-n <- as.numeric(argumentos[1]) # tamanho da amostra
+pi1 <- as.numeric(argumentos[2])
+beta0 <- as.numeric(argumentos[3])
+beta1 <- as.numeric(argumentos[4])
+lambda <- as.numeric(argumentos[5])
+sig <- as.numeric(argumentos[6])
+R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
+n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -39,9 +39,9 @@ inicio <- Sys.time()
 #fixando a semente
 set.seed(1992)
 
-m3_loglik <- function(theta, w, y){
-  sig = 0.2
-  n = 5000
+m3_loglik <- function(theta, w, y, sig, n){
+  # sig = 0.2
+  # n = 5000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m3
@@ -95,6 +95,7 @@ for(i in 1:R){
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
   print(Sys.time() - inicio)
+  
   p.i <- ifelse(y == 0, pi0, pi1)
   
   uniformes <- runif(n, 0, 1)
@@ -147,7 +148,9 @@ for(i in 1:R){
       lower = c(0, 0,-Inf,-Inf,-Inf),
       upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
       w = w,
-      y = ytil
+      y = ytil,
+      sig = sig,
+      n = n
     )
     ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
     
