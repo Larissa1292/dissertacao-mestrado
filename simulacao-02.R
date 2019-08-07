@@ -16,10 +16,10 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 #### Definindo os parâmetros iniciais ####
 
-beta0 <- 0
-beta1 <- 1
 pi0 <- 0.1
 pi1 <- 0.2
+beta0 <- 0
+beta1 <- 1
 lambda <- 2
 sig <- 0
 R <- 100 #num de replicas de Monte Carlo
@@ -151,6 +151,13 @@ beta0medio <- mean(emv.beta0)
 beta1medio <- mean(emv.beta1)
 #lambdamedio <- mean(emv.lambda)
 
+# calculando o erro padrão das estimativas de cada parâmetro
+pi0sd <- sd(emv.pi0)
+pi1sd <- sd(emv.pi1)
+beta0sd <- sd(emv.beta0)
+beta1sd <- sd(emv.beta1)
+#lambdasd <- sd(emv.lambda)
+
 #### Calculando viés e erro quadratico medio (eqm) ####
 # calculando o viés (vies = media - valor verdadeiro do parametro)
 pi0vies <- pi0medio - pi0
@@ -194,6 +201,11 @@ resultado <- list(
   Beta0_est_medio = beta0medio,
   Beta1_est_medio = beta1medio,
   # Lambda_est_medio = lambdamedio,
+  Pi0_sd = pi0sd,
+  P1_sd = pi1sd,
+  Beta0_sd = beta0sd,
+  Beta1_sd = beta1sd,
+  # Lambda_sd = lambdasd,
   Pi0_est_vies = pi0vies,
   Pi1_est_vies = pi1vies,
   Beta0_est_vies = beta0vies,
