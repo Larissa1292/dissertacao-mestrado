@@ -25,6 +25,17 @@ lambda <- as.numeric(argumentos[5])
 sig <- as.numeric(argumentos[6])
 R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
 n <- as.numeric(argumentos[8]) # tamanho da amostra
+
+# pi0 <- 0.1
+# pi1 <- 0.2
+# beta0 <- 0
+# beta1 <- 1
+# lambda <- 0
+# sig <- 0.2
+# R <- 100 #num de replicas de Monte Carlo
+# n <-  5000 # tamanho da amostra
+
+
 #### Vetor de parâmetros ####
 
 parametros <- c(pi0, pi1, beta0, beta1, lambda)
@@ -88,7 +99,8 @@ for(i in 1:R){
   print(Sys.time() - inicio)  
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
-  x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
+  x <- w
+  #x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
   print(Sys.time() - inicio)
   #### Passo 3: Gerar y_i da Bernoulli ####
   
