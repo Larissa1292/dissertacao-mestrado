@@ -26,9 +26,18 @@ sig <- as.numeric(argumentos[6])
 R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
 n <- as.numeric(argumentos[8]) # tamanho da amostra
 
+# pi0 <- 0
+# pi1 <- 0
+# beta0 <-0 
+# beta1 <- 1
+# lambda <- 2
+# sig <- 0.2
+# R <- 100 #num de replicas de Monte Carlo
+# n <- 5000  # tamanho da amostra
+
 #### Vetor de parâmetros ####
 
-parametros <- c(pi0, pi1, beta0, beta1, lambda)
+parametros <- c(beta0, beta1, lambda)
 
 #### Definindo a função de Log-Verossimilhança ####
 
@@ -44,12 +53,12 @@ m3_loglik <- function(theta, w, y, sig, n){
   # n = 5000
   #### Definindo expressões e valores para a esp.condicional ####
   
-  #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m3
-  gama <- c(theta[4], theta[5] / sig) #Definir como vetor linha
-  mu.w <- cbind(theta[3] * rep(1, n),-theta[5] * w / sig)
+  #theta <- c(0, 1, 2) #vetor para testar sem precisar rodar a funcao m3
+  gama <- c(theta[2], theta[3] / sig) #Definir como vetor linha
+  mu.w <- cbind(theta[1] * rep(1, n),-theta[3] * w / sig)
   media <- rep(0, 2)
   covariancia <- diag(2) + (sig ^ 2 * (as.matrix(gama) %*% t(gama)))
-  up <- cbind(theta[3] + theta[4] * w, rep(0, n))
+  up <- cbind(theta[1] + theta[2] * w, rep(0, n))
   
   ### Com base nas contas temos: up_i = mu.w + (gama * wi) = [Beta0 + Beta1 * wi  0]
   
@@ -58,8 +67,8 @@ m3_loglik <- function(theta, w, y, sig, n){
   prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
   for (k in 1:n) {
-    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
-    prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W, neste caso pi0 = pi1 = 0
+    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[1, ])
+    prob[k] <- esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W, neste caso pi0 = pi1 = 0
   }
   
   ## Se prob = 1, assumir 0.999999999; Se prob = 0, assumir 0.000000001:
@@ -71,8 +80,8 @@ m3_loglik <- function(theta, w, y, sig, n){
 
 
 #vetor de zeros para armazenar as estimativas de cada parâmetro
-emv.pi0 <- rep(0, R)
-emv.pi1 <- rep(0, R)
+#emv.pi0 <- rep(0, R)
+#emv.pi1 <- rep(0, R)
 emv.beta0 <- rep(0, R)
 emv.beta1 <- rep(0, R)
 emv.lambda <- rep(0, R)
@@ -89,23 +98,23 @@ for(i in 1:R){
   print(Sys.time() - inicio)  
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
-  x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
+  x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[3])
   print(Sys.time() - inicio)
   #### Passo 3: Gerar y_i da Bernoulli ####
   
-  y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
+  y <- rbinom(n = n, size = 1, prob = pnorm(parametros[1] + parametros[2] * x))
   print(Sys.time() - inicio)
-  
-  p.i <- ifelse(y == 0, pi0, pi1)
-  
-  uniformes <- runif(n, 0, 1)
-  
-  comparacao <- ifelse(uniformes < p.i, 1, 0)
+  # 
+  # p.i <- ifelse(y == 0, pi0, pi1)
+  # 
+  # uniformes <- runif(n, 0, 1)
+  # 
+  # comparacao <- ifelse(uniformes < p.i, 1, 0)
   #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
   
   #### Passo 4: Gerar Ytil ####
   
-  ytil <- abs(y - comparacao)
+  ytil <- y #no modelo 3 temos que Y_T = Y => Y = Ytil
   
   
   # Generate the true binary response y_true, with covariate x
@@ -141,12 +150,12 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      par = c(0, 0, 0, 1, 2),
+      par = c(0, 1, 2),
       fn = m3_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
-      lower = c(0, 0,-Inf,-Inf,-Inf),
-      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
+      lower = c(-Inf,-Inf,-Inf),
+      upper = c(Inf, Inf, Inf),
       w = w,
       y = ytil,
       sig = sig,
@@ -156,11 +165,11 @@ for(i in 1:R){
     
     print(Sys.time() - inicio)
     if (otimizacao$convergence == 0) { #0: indica convergencia completa
-      emv.pi0[i] = otimizacao$par[1]
-      emv.pi1[i] = otimizacao$par[2]
-      emv.beta0[i] = otimizacao$par[3]
-      emv.beta1[i] = otimizacao$par[4]
-      emv.lambda[i] = otimizacao$par[5]
+      #emv.pi0[i] = otimizacao$par[1]
+      #emv.pi1[i] = otimizacao$par[2]
+      emv.beta0[i] = otimizacao$par[1]
+      emv.beta1[i] = otimizacao$par[2]
+      emv.lambda[i] = otimizacao$par[3]
     }
     #else{
     # falhas = falhas + 1
@@ -173,29 +182,29 @@ for(i in 1:R){
 # fim Monte Carlo
 
 # calculando as médias das estimativas de cada parâmetro
-pi0medio <- mean(emv.pi0)
-pi1medio <- mean(emv.pi1)
+#pi0medio <- mean(emv.pi0)
+#pi1medio <- mean(emv.pi1)
 beta0medio <- mean(emv.beta0)
 beta1medio <- mean(emv.beta1)
 lambdamedio <- mean(emv.lambda)
 
 # calculando o erro padrão das estimativas de cada parâmetro
-pi0sd <- sd(emv.pi0)
-pi1sd <- sd(emv.pi1)
+#pi0sd <- sd(emv.pi0)
+#pi1sd <- sd(emv.pi1)
 beta0sd <- sd(emv.beta0)
 beta1sd <- sd(emv.beta1)
 lambdasd <- sd(emv.lambda)
 
 #### Calculando viés e erro quadratico medio (eqm) ####
 # calculando o viés (vies = media - valor verdadeiro do parametro)
-pi0vies <- pi0medio - pi0
-pi1vies <- pi1medio - pi1
+#pi0vies <- pi0medio - pi0
+#pi1vies <- pi1medio - pi1
 beta0vies <- beta0medio - beta0
 beta1vies <- beta1medio - beta1
 lambdavies <- lambdamedio - lambda
 
-pi0viesrel <- pi0vies / pi0
-pi1viesrel <- pi1vies / pi1
+#pi0viesrel <- pi0vies / pi0
+#pi1viesrel <- pi1vies / pi1
 beta0viesrel <- beta0vies / beta0
 beta1viesrel <- beta1vies / beta1
 lambdaviesrel <- lambdavies / lambda
@@ -204,8 +213,8 @@ lambdaviesrel <- lambdavies / lambda
 # EQM(theta_chapeu) = Var(theta_chaeu) + b²(theta), b²(): viés
 # b²(theta) = E(theta_chapeu) - theta
 
-pi0EQM <- var(emv.pi0) + (pi0vies) ^ 2
-pi1EQM <- var(emv.pi1) + (pi1vies) ^ 2
+#pi0EQM <- var(emv.pi0) + (pi0vies) ^ 2
+#pi1EQM <- var(emv.pi1) + (pi1vies) ^ 2
 beta0EQM <- var(emv.beta0) + (beta0vies) ^ 2
 beta1EQM <- var(emv.beta1) + (beta1vies) ^ 2
 lambdaEQM <- var(emv.lambda) + (lambdavies) ^ 2
@@ -218,33 +227,33 @@ tempo
 resultado <- list(
   Num_obs = n,
   Replicas = R,
-  Pi0 = pi0,
-  Pi1 = pi1,
+  # Pi0 = pi0,
+  # Pi1 = pi1,
   Beta_0 = beta0,
   Beta_1 = beta1,
   Lambda = lambda,
-  Pi0_est_medio = pi0medio,
-  Pi1_est_medio = pi1medio,
+  # Pi0_est_medio = pi0medio,
+  # Pi1_est_medio = pi1medio,
   Beta0_est_medio = beta0medio,
   Beta1_est_medio = beta1medio,
   Lambda_est_medio = lambdamedio,
-  Pi0_sd = pi0sd,
-  P1_sd = pi1sd,
+  # Pi0_sd = pi0sd,
+  # P1_sd = pi1sd,
   Beta0_sd = beta0sd,
   Beta1_sd = beta1sd,
   Lambda_sd = lambdasd,
-  Pi0_est_vies = pi0vies,
-  Pi1_est_vies = pi1vies,
+  # Pi0_est_vies = pi0vies,
+  # Pi1_est_vies = pi1vies,
   Beta0_est_vies = beta0vies,
   Beta1_est_vies = beta1vies,
   Lambda_est_vies = lambdavies,
-  Pi0_est_vies_rel = pi0viesrel,
-  Pi1_est_vies_rel = pi1viesrel,
+  # Pi0_est_vies_rel = pi0viesrel,
+  # Pi1_est_vies_rel = pi1viesrel,
   Beta0_est_vies_rel = beta0viesrel,
   Beta1_est_vies_rel = beta1viesrel,
   Lambda_est_vies_rel = lambdaviesrel,
-  EQM_Pi0 = pi0EQM,
-  EQM_Pi1 = pi1EQM,
+  # EQM_Pi0 = pi0EQM,
+  # EQM_Pi1 = pi1EQM,
   EQM_Beta0 = beta0EQM,
   EQM_Beta1 = beta1EQM, 
   EQM_Lambda = lambdaEQM,
