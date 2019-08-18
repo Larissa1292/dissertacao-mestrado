@@ -150,7 +150,7 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      par = c(0, 1, 0.0001),
+      par = c(0.3, 0.7, 1.5),
       fn = m3_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
