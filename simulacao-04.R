@@ -3,6 +3,8 @@
 # Testar para R = 500 e n = 10000, para (pi0 = 0.1, pi1 = 0.2, beta0 = 0, beta1 = 1, lambda = 2, sig = 0.2) OK!
 # Testar para R = 500 e n = 10000, para (pi0 = 0.05, pi1 = 0.05, beta0 = 0, beta1 = 1, lambda = 0.001, sig2 = 0.01) OK!
 
+argumentos <- commandArgs(trailingOnly = TRUE)
+
 require(fExtremes)
 require(mvtnorm)
 require(sn)
@@ -13,14 +15,24 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 #### Definindo os parâmetros iniciais ####
 
-beta0 <- 0
-beta1 <- 1
-pi0 <- 0.05
-pi1 <- 0.05
-lambda <- 0.001
-sig <- 0.1 # => sig² = 0.01
-R <- 500 #num de replicas de Monte Carlo
-n <- 10000 # tamanho da amostra
+beta0 <- as.numeric(argumentos[1])
+beta1 <- as.numeric(argumentos[2])
+pi0 <- as.numeric(argumentos[3])
+pi1 <- as.numeric(argumentos[4])
+lambda <- as.numeric(argumentos[5])
+sig <- as.numeric(argumentos[6]) # => sig² = 0.01
+R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
+n <- as.numeric(argumentos[8]) # tamanho da amostra
+
+
+# beta0 <- 0
+# beta1 <- 1
+# pi0 <- 0.05
+# pi1 <- 0.05
+# lambda <- 0.001
+# sig <- 0.1 # => sig² = 0.01
+# R <- 500 #num de replicas de Monte Carlo
+# n <- 10000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
