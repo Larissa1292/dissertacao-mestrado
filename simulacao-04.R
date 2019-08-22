@@ -249,4 +249,4 @@ resultado <- list(
 resultado
 
 # Salvando os resultados em um arquivo
-write.csv(x = resultado, file = "m4_r500_n10000_p05_p05_l001.csv")
+write.csv(x = resultado, file = paste0("m4_r", R, "_n", n, "_l", lambda, "_sig", sig, ".csv"))
