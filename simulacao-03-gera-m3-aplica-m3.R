@@ -265,4 +265,4 @@ resultado <- list(
 resultado
 
 # Salvando os resultados em um arquivo
-write.csv(x = resultado, file = paste0("m3_r", R,"_n", n, "_l", lambda,"_sig", sig,".csv"))
+write.csv(x = resultado, file = paste0("m3_gera_r", R,"_n", n, "_l", lambda,"_sig", sig,".csv"))
