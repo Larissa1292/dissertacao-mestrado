@@ -15,10 +15,10 @@ setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
 #### Definindo os parâmetros iniciais ####
 
-beta0 <- as.numeric(argumentos[1])
-beta1 <- as.numeric(argumentos[2])
-pi0 <- as.numeric(argumentos[3])
-pi1 <- as.numeric(argumentos[4])
+pi0 <- as.numeric(argumentos[1])
+pi1 <- as.numeric(argumentos[2])
+beta0 <- as.numeric(argumentos[3])
+beta1 <- as.numeric(argumentos[4])
 lambda <- as.numeric(argumentos[5])
 sig <- as.numeric(argumentos[6]) # => sig² = 0.01
 R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
