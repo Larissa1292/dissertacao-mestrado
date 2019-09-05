@@ -48,7 +48,7 @@ inicio <- Sys.time()
 #fixando a semente
 set.seed(1992)
 
-m3_loglik <- function(theta, w, y, sig, n){
+m3_loglik <- function(theta, w, y.t, sig, n){
   # sig = 0.2
   # n = 5000
   #### Definindo expressões e valores para a esp.condicional ####
@@ -67,14 +67,14 @@ m3_loglik <- function(theta, w, y, sig, n){
   prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
   for (k in 1:n) {
-    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[1, ])
+    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
     prob[k] <- esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W, neste caso pi0 = pi1 = 0
   }
   
   ## Se prob = 1, assumir 0.999999999; Se prob = 0, assumir 0.000000001:
   p <- ifelse(prob == 1, 0.999999999, prob)
   p <- ifelse(prob == 0, 0.000000001, prob)
-  loglike <- sum(y * log(p)) + sum((1 - y) * log(1 - p)) #Log-verossimilhanca
+  loglike <- sum(y.t * log(p)) + sum((1 - y.t) * log(1 - p)) #Log-verossimilhanca
   return(loglike)
 }  
 
@@ -100,52 +100,29 @@ for(i in 1:R){
   
   x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[3])
   print(Sys.time() - inicio)
-  #### Passo 3: Gerar y_i da Bernoulli ####
   
-  y <- rbinom(n = n, size = 1, prob = pnorm(parametros[1] + parametros[2] * x))
+  #### Passo 3: Gerar Y_T (verdadeiro) da Bernoulli ####
+  
+  y.t <- rbinom(n = n, size = 1, prob = pnorm(parametros[1] + parametros[2] * x)) 
   print(Sys.time() - inicio)
-  # 
-  p.i <- ifelse(y == 0, pi0, pi1)
+  
+  ### Gerando as probabilidades do y (observado) 
+  p.i <- ifelse(y.t == 0, pi0, pi1)
 
   uniformes <- runif(n, 0, 1)
-
-  comparacao <- ifelse(uniformes < p.i, 1, 0)
+  
   #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
-  
-  #### Passo 4: Gerar Ytil ####
-  
-  ytil <- abs(y - comparacao)
+  comparacao <- ifelse(uniformes < p.i, 1, 0)
   
   
-  # Generate the true binary response y_true, with covariate x
+  #### Passo 4: Gerar Y observado ####
   
-  # lm <-  beta0 + beta1 * x    ###  AQUI TEM QUE SER beta0 e beta 1.... POR QUE DIFERENTES BETAS? ok
-  # pr.probit <- pnorm(lm)
-  # y_true <- rbinom(n, 1, pr.probit)
-  # 
-  # # # Generate the misclassifed variable 
-  #  
-  # pr_pi0.probit <- pi0
-  # alpha0.probit <- rbinom(n, 1, pr_pi0.probit)  # alpha0=(Y=1|Y_T=0)
-  # 
-  # pr_pi1.probit <- 1 - pi1
-  # alpha1.probit <- rbinom(n, 1, pr_pi1.probit)  # alpha1=(Y=1|Y_T=1)
-  # y <- vector()  ### Y OBSERVADO!
-  # 
-  # for(i in 1:n){
-  # y[i] <- ifelse(y_true[i]==1, alpha1.probit[i], alpha0.probit[i])
-  # }
-  #
-  # QUAL A OUTRA MANEIRA DE GERAR Y ?
-  # Considerando a prob de sucesso P(Y=1|W) =  pi0 + (1 - pi0 - pi1) * E_x|W{\Phi(beta0 + beta1*x)}
+  #y <- abs(y - comparacao) 
   
-  
-  #### Calculando a log-verossimilhanca para cada n ####
-  # m3_n <- function(theta) {
-  #   m3_loglik(theta, w, ytil)
-  # }
+  y <- y.t #no modelo 3 temos que Y_T = Y (notação do projeto) 
   
   print(Sys.time() - inicio)
+  
   #### Passo 5: otimizacao ####
   
   tryCatch(  {
@@ -157,7 +134,7 @@ for(i in 1:R){
       lower = c(-Inf,-Inf,-Inf),
       upper = c(Inf, Inf, Inf),
       w = w,
-      y = ytil,
+      y.t = y,
       sig = sig,
       n = n
     )
