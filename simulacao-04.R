@@ -49,7 +49,7 @@ set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
   sig = 0.2
-  n = 10000
+  n = 20000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m4
