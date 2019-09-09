@@ -67,7 +67,7 @@ m3_loglik <- function(theta, w, y, sig, n){
   prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
   for (k in 1:n) {
-    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[1, ])
+    esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
     prob[k] <- esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W, neste caso pi0 = pi1 = 0
   }
   
