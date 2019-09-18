@@ -6,7 +6,7 @@ require(sn)
 require(optimParallel) # Paralelizando a otimização
 
 
-#argumentos <- commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
+argumentos <- commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
 
 cl <- makeCluster(3)     # definindo o num de clusters no processador
 setDefaultCluster(cl=cl) # definindo 'cl' como cluster padrao
