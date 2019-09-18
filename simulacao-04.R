@@ -3,17 +3,18 @@
 # Testar para R = 500 e n = 10000, para (pi0 = 0.1, pi1 = 0.2, beta0 = 0, beta1 = 1, lambda = 2, sig = 0.2) OK!
 # Testar para R = 500 e n = 10000, para (pi0 = 0.05, pi1 = 0.05, beta0 = 0, beta1 = 1, lambda = 0.001, sig2 = 0.01) OK!
 
-argumentos <- commandArgs(trailingOnly = TRUE)
-
 require(fExtremes)
 require(mvtnorm)
 require(sn)
 require(optimParallel)
-cl <- makeCluster(3)     # set the number of processor cores
-setDefaultCluster(cl=cl) # set 'cl' as default cluster
+
+argumentos <- commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
 
 
-#### Definindo os parâmetros iniciais ####
+cl <- makeCluster(3)     # definindo o num de clusters no processador
+setDefaultCluster(cl=cl) # definindo 'cl' como cluster padrao
+
+#### Definindo os parâmetros iniciais (via terminal) ####
 
 pi0 <- as.numeric(argumentos[1])
 pi1 <- as.numeric(argumentos[2])
@@ -24,6 +25,7 @@ sig <- as.numeric(argumentos[6]) # => sig² = 0.01
 R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
 n <- as.numeric(argumentos[8]) # tamanho da amostra
 
+#### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
 
 # beta0 <- 0
 # beta1 <- 1
@@ -32,7 +34,7 @@ n <- as.numeric(argumentos[8]) # tamanho da amostra
 # lambda <- 0.001
 # sig <- 0.1 # => sig² = 0.01
 # R <- 500 #num de replicas de Monte Carlo
-# n <- 10000 # tamanho da amostra
+# n <- 20000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -91,14 +93,17 @@ emv.lambda <- rep(0, R)
 for(i in 1:R){
   print(i)
   print(Sys.time() - inicio)
+  
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
   
   w <- runif(n,-4, 4)
   print(Sys.time() - inicio)  
+  
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
   x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
   print(Sys.time() - inicio)
+  
   #### Passo 3: Gerar y_i da Bernoulli ####
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
@@ -113,37 +118,9 @@ for(i in 1:R){
   #### Passo 4: Gerar Ytil ####
   
   ytil <- abs(y - comparacao)
-  
-  
-  # Generate the true binary response y_true, with covariate x
-  
-  # lm <-  beta0 + beta1 * x    ###  AQUI TEM QUE SER beta0 e beta 1.... POR QUE DIFERENTES BETAS? ok
-  # pr.probit <- pnorm(lm)
-  # y_true <- rbinom(n, 1, pr.probit)
-  # 
-  # # # Generate the misclassifed variable 
-  #  
-  # pr_pi0.probit <- pi0
-  # alpha0.probit <- rbinom(n, 1, pr_pi0.probit)  # alpha0=(Y=1|Y_T=0)
-  # 
-  # pr_pi1.probit <- 1 - pi1
-  # alpha1.probit <- rbinom(n, 1, pr_pi1.probit)  # alpha1=(Y=1|Y_T=1)
-  # y <- vector()  ### Y OBSERVADO!
-  # 
-  # for(i in 1:n){
-  # y[i] <- ifelse(y_true[i]==1, alpha1.probit[i], alpha0.probit[i])
-  # }
-  #
-  # QUAL A OUTRA MANEIRA DE GERAR Y ?
-  # Considerando a prob de sucesso P(Y=1|W) =  pi0 + (1 - pi0 - pi1) * E_x|W{\Phi(beta0 + beta1*x)}
-  
-  
-  #### Calculando a log-verossimilhanca para cada n ####
-  # m4_n <- function(theta) {
-  #   m4_loglik(theta, w, ytil)   
-  # }
-  
+
   print(Sys.time() - inicio)
+  
   #### Passo 5: otimizacao ####
   
   tryCatch(  {
@@ -219,6 +196,7 @@ lambdaEQM <- var(emv.lambda) + (lambdavies) ^ 2
 fim <- Sys.time()
 tempo <- fim - inicio
 tempo
+
 #### Lista com os resultados finais ####
 resultado <- list(
   Num_obs = n,
