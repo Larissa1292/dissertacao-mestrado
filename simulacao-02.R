@@ -6,32 +6,32 @@ require(sn)
 require(optimParallel) # Paralelizando a otimização
 
 
-argumentos <- commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
+#argumentos <- commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
 
 cl <- makeCluster(3)     # definindo o num de clusters no processador
 setDefaultCluster(cl=cl) # definindo 'cl' como cluster padrao
 
 #### Definindo os parâmetros iniciais (via terminal) ####
 
-pi0 <- as.numeric(argumentos[1]) 
-pi1 <- as.numeric(argumentos[2])
-beta0 <- as.numeric(argumentos[3])
-beta1 <- as.numeric(argumentos[4])
-lambda <- as.numeric(argumentos[5])
-sig <- as.numeric(argumentos[6])
-R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
-n <- as.numeric(argumentos[8]) # tamanho da amostra
+# pi0 <- as.numeric(argumentos[1]) 
+# pi1 <- as.numeric(argumentos[2])
+# beta0 <- as.numeric(argumentos[3])
+# beta1 <- as.numeric(argumentos[4])
+# lambda <- as.numeric(argumentos[5])
+# sig <- as.numeric(argumentos[6])
+# R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
+# n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
 
-# pi0 <- 0.1
-# pi1 <- 0.2
-# beta0 <- 0
-# beta1 <- 1
-# lambda <- 0 # neste caso, nao temos lambda
-# sig <- 0.2
-# R <- 100 #num de replicas de Monte Carlo
-# n <-  5000 # tamanho da amostra
+pi0 <- 0.1
+pi1 <- 0.2
+beta0 <- 0
+beta1 <- 1
+lambda <- 0 # neste caso, nao temos lambda
+sig <- 0.2
+R <- 500 #num de replicas de Monte Carlo
+n <-  10000 # tamanho da amostra
 
 
 #### Vetor de parâmetros ####
@@ -67,7 +67,7 @@ m2_loglik <- function(theta, w, y){
   
   probit <- pnorm(theta[3] + theta[4] * w)
   prob <- theta[1] + (1 - theta[1] - theta[2]) * probit # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
-
+  
   
   ## Se prob = 1, assumir 0.999999999; Se prob = 0, assumir 0.000000001:
   p <- ifelse(prob == 1, 0.999999999, prob)
@@ -90,7 +90,7 @@ emv.beta1 <- rep(0, R)
 for(i in 1:R){
   print(i)
   print(Sys.time() - inicio)
- 
+  
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
   
   w <- runif(n,-4, 4)
@@ -106,16 +106,13 @@ for(i in 1:R){
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
   print(Sys.time() - inicio)
-  p.i <- ifelse(y == 0, pi0, pi1)
-  
-  uniformes <- runif(n, 0, 1)
-  
-  comparacao <- ifelse(uniformes < p.i, 1, 0)
-  #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
   
   #### Passo 4: Gerar Ytil ####
   
-  ytil <- abs(y - comparacao)
+  probit <- pnorm(beta0 + beta1 * w)
+  ytil <- pi0 + (1 - pi0 - pi1) * probit
+  
+  # ytil <- abs(y - comparacao)
   
   print(Sys.time() - inicio)
   
