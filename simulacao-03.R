@@ -1,21 +1,17 @@
-argumentos = commandArgs(trailingOnly = TRUE)
-
 # Simulação de MC para o modelo 3 (Somente com erro de medida)
 # Modelo somente com erro de medida, logo não tem erro de classificacao. Com isso, pi0 = 0 e pi1 = 0.
-
-# Rodar para R = 100 e n = 5000 ok
-# Rodar para R = 500 e n = 10000 ok
 
 require(fExtremes)
 require(mvtnorm)
 require(sn)
 library(optimParallel)
-cl <- makeCluster(3)     # set the number of processor cores
-setDefaultCluster(cl=cl) # set 'cl' as default cluster
 
+argumentos = commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
 
+cl <- makeCluster(3)     # definindo o num de clusters no processador
+setDefaultCluster(cl=cl) # definindo 'cl' como cluster padrao
 
-#### Definindo os parâmetros iniciais ####
+#### Definindo os parâmetros iniciais (via terminal) ####
 
 pi0 <- as.numeric(argumentos[1])
 pi1 <- as.numeric(argumentos[2])
@@ -26,22 +22,22 @@ sig <- as.numeric(argumentos[6])
 R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
 n <- as.numeric(argumentos[8]) # tamanho da amostra
 
+#### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
+
 # pi0 <- 0
 # pi1 <- 0
 # beta0 <-0 
 # beta1 <- 1
 # lambda <- 2
 # sig <- 0.2
-# R <- 100 #num de replicas de Monte Carlo
-# n <- 5000  # tamanho da amostra
+# R <- 500 #num de replicas de Monte Carlo
+# n <- 10000  # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
 parametros <- c(beta0, beta1, lambda)
 
 #### Definindo a função de Log-Verossimilhança ####
-
-#Modelo 4: Há erro de medição e de classificação
 
 inicio <- Sys.time()
 
@@ -50,7 +46,8 @@ set.seed(1992)
 
 m3_loglik <- function(theta, w, y, sig, n){
   # sig = 0.2
-  # n = 5000
+  # n = 10000
+  
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0, 1, 2) #vetor para testar sem precisar rodar a funcao m3
@@ -92,60 +89,29 @@ emv.lambda <- rep(0, R)
 for(i in 1:R){
   print(i)
   print(Sys.time() - inicio)
+  
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
   
   w <- runif(n,-4, 4)
   print(Sys.time() - inicio)  
+  
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
   x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[3])
   print(Sys.time() - inicio)
+  
   #### Passo 3: Gerar y_i da Bernoulli ####
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[1] + parametros[2] * x))
   print(Sys.time() - inicio)
-  # 
-  # p.i <- ifelse(y == 0, pi0, pi1)
-  # 
-  # uniformes <- runif(n, 0, 1)
-  # 
-  # comparacao <- ifelse(uniformes < p.i, 1, 0)
-  #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
   
   #### Passo 4: Gerar Ytil ####
   
-  ytil <- y #no modelo 3 temos que Y_T = Y => Y = Ytil
+  ytil <- y #no modelo 3 temos que Y_T = Y
   
-  
-  # Generate the true binary response y_true, with covariate x
-  
-  # lm <-  beta0 + beta1 * x    ###  AQUI TEM QUE SER beta0 e beta 1.... POR QUE DIFERENTES BETAS? ok
-  # pr.probit <- pnorm(lm)
-  # y_true <- rbinom(n, 1, pr.probit)
-  # 
-  # # # Generate the misclassifed variable 
-  #  
-  # pr_pi0.probit <- pi0
-  # alpha0.probit <- rbinom(n, 1, pr_pi0.probit)  # alpha0=(Y=1|Y_T=0)
-  # 
-  # pr_pi1.probit <- 1 - pi1
-  # alpha1.probit <- rbinom(n, 1, pr_pi1.probit)  # alpha1=(Y=1|Y_T=1)
-  # y <- vector()  ### Y OBSERVADO!
-  # 
-  # for(i in 1:n){
-  # y[i] <- ifelse(y_true[i]==1, alpha1.probit[i], alpha0.probit[i])
-  # }
-  #
-  # QUAL A OUTRA MANEIRA DE GERAR Y ?
-  # Considerando a prob de sucesso P(Y=1|W) =  pi0 + (1 - pi0 - pi1) * E_x|W{\Phi(beta0 + beta1*x)}
-  
-  
-  #### Calculando a log-verossimilhanca para cada n ####
-  # m3_n <- function(theta) {
-  #   m3_loglik(theta, w, ytil)
-  # }
-  
+
   print(Sys.time() - inicio)
+  
   #### Passo 5: otimizacao ####
   
   tryCatch(  {
