@@ -1,23 +1,19 @@
-argumentos <- commandArgs(trailingOnly = TRUE)
 # Simulação de MC para o modelo 2 (Somente com erro de classificacao, ou seja, sig2 = 0)
-
-
-# Rodar para R = 100 e n = 5000
-# Rodar para R = 500 e n = 10000
-
-# Verificar código!
 
 require(fExtremes)
 require(mvtnorm)
 require(sn)
-require(optimParallel)
-cl <- makeCluster(3)     # set the number of processor cores
-setDefaultCluster(cl=cl) # set 'cl' as default cluster
+require(optimParallel) # Paralelizando a otimização
 
 
-#### Definindo os parâmetros iniciais ####
+argumentos <- commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
 
-pi0 <- as.numeric(argumentos[1])
+cl <- makeCluster(3)     # definindo o num de clusters no processador
+setDefaultCluster(cl=cl) # definindo 'cl' como cluster padrao
+
+#### Definindo os parâmetros iniciais (via terminal) ####
+
+pi0 <- as.numeric(argumentos[1]) 
 pi1 <- as.numeric(argumentos[2])
 beta0 <- as.numeric(argumentos[3])
 beta1 <- as.numeric(argumentos[4])
@@ -26,11 +22,13 @@ sig <- as.numeric(argumentos[6])
 R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
 n <- as.numeric(argumentos[8]) # tamanho da amostra
 
+#### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
+
 # pi0 <- 0.1
 # pi1 <- 0.2
 # beta0 <- 0
 # beta1 <- 1
-# lambda <- 0
+# lambda <- 0 # neste caso, nao temos lambda
 # sig <- 0.2
 # R <- 100 #num de replicas de Monte Carlo
 # n <-  5000 # tamanho da amostra
@@ -38,7 +36,7 @@ n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
-parametros <- c(pi0, pi1, beta0, beta1, lambda)
+parametros <- c(pi0, pi1, beta0, beta1)
 
 #### Definindo a função de Log-Verossimilhança ####
 
@@ -50,10 +48,8 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m2_loglik <- function(theta, w, y){
-  #sig = 0
-  #n = 1000
   
-  #### Definindo expressões e valores para a esp.condicional ####
+  #### Definindo expressões e valores para a esp.condicional (para o M2 temos apenas a funcao probit) ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m2
   # gama <- c(theta[4], theta[5] / sig) #Definir como vetor linha
@@ -68,6 +64,7 @@ m2_loglik <- function(theta, w, y){
   
   #prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   #esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
+  
   probit <- pnorm(theta[3] + theta[4] * w)
   prob <- theta[1] + (1 - theta[1] - theta[2]) * probit # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
 
@@ -93,15 +90,18 @@ emv.beta1 <- rep(0, R)
 for(i in 1:R){
   print(i)
   print(Sys.time() - inicio)
+ 
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
   
   w <- runif(n,-4, 4)
   print(Sys.time() - inicio)  
-  #### Passo 2: Gerar x_i amostras da Skew Normal ####
+  
+  #### Passo 2: Gerar x_i amostras da Skew Normal (para M2 x = w) ####
   
   x <- w
   #x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
   print(Sys.time() - inicio)
+  
   #### Passo 3: Gerar y_i da Bernoulli ####
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
@@ -117,12 +117,8 @@ for(i in 1:R){
   
   ytil <- abs(y - comparacao)
   
-  #### Calculando a log-verossimilhanca para cada n ####
-  # m2_n <- function(theta) {
-  #   m2_loglik(theta, w, ytil)   
-  # }
-  
   print(Sys.time() - inicio)
+  
   #### Passo 5: otimizacao ####
   
   tryCatch(  {
