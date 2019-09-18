@@ -13,25 +13,25 @@ setDefaultCluster(cl=cl) # definindo 'cl' como cluster padrao
 
 #### Definindo os parâmetros iniciais (via terminal) ####
 
-# pi0 <- as.numeric(argumentos[1]) 
-# pi1 <- as.numeric(argumentos[2])
-# beta0 <- as.numeric(argumentos[3])
-# beta1 <- as.numeric(argumentos[4])
-# lambda <- as.numeric(argumentos[5])
-# sig <- as.numeric(argumentos[6])
-# R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
-# n <- as.numeric(argumentos[8]) # tamanho da amostra
+pi0 <- as.numeric(argumentos[1])
+pi1 <- as.numeric(argumentos[2])
+beta0 <- as.numeric(argumentos[3])
+beta1 <- as.numeric(argumentos[4])
+lambda <- as.numeric(argumentos[5])
+sig <- as.numeric(argumentos[6])
+R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
+n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
 
-pi0 <- 0.1
-pi1 <- 0.2
-beta0 <- 0
-beta1 <- 1
-lambda <- 0 # neste caso, nao temos lambda
-sig <- 0.2
-R <- 500 #num de replicas de Monte Carlo
-n <-  10000 # tamanho da amostra
+# pi0 <- 0.1
+# pi1 <- 0.2
+# beta0 <- 0
+# beta1 <- 1
+# lambda <- 0 # neste caso, nao temos lambda
+# sig <- 0.2
+# R <- 500 #num de replicas de Monte Carlo
+# n <-  10000 # tamanho da amostra
 
 
 #### Vetor de parâmetros ####
