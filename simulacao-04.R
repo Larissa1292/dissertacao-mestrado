@@ -29,12 +29,12 @@ n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 # beta0 <- 0
 # beta1 <- 1
-# pi0 <- 0.05
-# pi1 <- 0.05
-# lambda <- 0.001
-# sig <- 0.1 # => sig² = 0.01
+# pi0 <- 0.1
+# pi1 <- 0.2
+# lambda <- 0.2
+# sig <- 0.2 # => sig² = 0.01
 # R <- 500 #num de replicas de Monte Carlo
-# n <- 20000 # tamanho da amostra
+# n <- 10000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -51,7 +51,7 @@ set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
   sig = 0.2
-  n = 20000
+  n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m4
@@ -108,16 +108,20 @@ for(i in 1:R){
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
   print(Sys.time() - inicio)
-  p.i <- ifelse(y == 0, pi0, pi1)
-
-  uniformes <- runif(n, 0, 1)
-
-  comparacao <- ifelse(uniformes < p.i, 1, 0)
+  
+  # p.i <- ifelse(y == 0, pi0, pi1)
+  # 
+  # uniformes <- runif(n, 0, 1)
+  # 
+  # comparacao <- ifelse(uniformes < p.i, 1, 0)
   #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
   
   #### Passo 4: Gerar Ytil ####
   
-  ytil <- abs(y - comparacao)
+  probit <- pnorm(beta0 + beta1 * w)
+  ytil <- pi0 + (1 - pi0 - pi1) * probit
+  
+  #ytil <- abs(y - comparacao)
 
   print(Sys.time() - inicio)
   
