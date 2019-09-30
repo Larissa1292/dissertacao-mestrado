@@ -118,8 +118,8 @@ for(i in 1:R){
   
   #### Passo 4: Gerar Ytil ####
   
-  probit <- pnorm(beta0 + beta1 * w)
-  ytil <- pi0 + (1 - pi0 - pi1) * probit
+  #probit <- pnorm(beta0 + beta1 * w)
+  ytil <- pi0 + (1 - pi0 - pi1) * esp
   
   #ytil <- abs(y - comparacao)
 
