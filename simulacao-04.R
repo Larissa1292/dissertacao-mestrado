@@ -27,14 +27,14 @@ n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
 
-# beta0 <- 0
-# beta1 <- 1
-# pi0 <- 0.1
-# pi1 <- 0.2
-# lambda <- 0.2
-# sig <- 0.2 # => sig² = 0.01
-# R <- 500 #num de replicas de Monte Carlo
-# n <- 10000 # tamanho da amostra
+beta0 <- 0
+beta1 <- 1
+pi0 <- 0.1
+pi1 <- 0.2
+lambda <- 0.2
+sig <- 0.2 # => sig² = 0.01
+R <- 500 #num de replicas de Monte Carlo
+n <- 10000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -118,8 +118,21 @@ for(i in 1:R){
   
   #### Passo 4: Gerar Ytil ####
   
+  gama2 <- c(beta1, lambda / sig) #Definir como vetor linha
+  mu.w2 <- cbind(beta0 * rep(1, n),-lambda * w / sig)
+  media2 <- rep(0, 2)
+  covariancia2 <- diag(2) + (sig ^ 2 * (as.matrix(gama2) %*% t(gama2)))
+  up2 <- cbind(beta0 + beta1 * w, rep(0, n))
+  
+  esp_cond <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
+  
+  for (j in 1:n) {
+    esperanca <- 2 * mvtnorm::pmvnorm(mean = media2, sigma = covariancia2, lower = c(-Inf,-Inf), upper = up[j, ])
+    esp_cond[j] <- esperanca[1] # armazenando os valores de E_X|W
+  }
+  
   #probit <- pnorm(beta0 + beta1 * w)
-  ytil <- pi0 + (1 - pi0 - pi1) * esp
+  ytil <- pi0 + (1 - pi0 - pi1) * esp_cond
   
   #ytil <- abs(y - comparacao)
 
