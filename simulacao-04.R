@@ -127,7 +127,7 @@ for(i in 1:R){
   esp_cond <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
   
   for (j in 1:n) {
-    esperanca <- 2 * mvtnorm::pmvnorm(mean = media2, sigma = covariancia2, lower = c(-Inf,-Inf), upper = up[j, ])
+    esperanca <- 2 * mvtnorm::pmvnorm(mean = media2, sigma = covariancia2, lower = c(-Inf,-Inf), upper = up2[j, ])
     esp_cond[j] <- esperanca[1] # armazenando os valores de E_X|W
   }
   
