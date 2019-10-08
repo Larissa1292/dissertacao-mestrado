@@ -142,16 +142,16 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      par = c(0.09, 0.19, 0.001, 0.99, 1.98),
+      par = c(0.09, 0.19, 0.001, 0.99, 1.98), # chute inicial
       fn = m4_loglik,
       method = "L-BFGS-B",
-      control = list(fnscale = -1),
+      control = list(fnscale = -1), ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
       lower = c(0, 0,-Inf,-Inf,-Inf),
-      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
-      w = w,
-      y = ytil
+      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf)
+      # w = w, # aqui w e y nao sao fixos
+      # y = ytil
     )
-    ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
+    
     
     print(Sys.time() - inicio)
     if (otimizacao$convergence == 0) { #0: indica convergencia completa
