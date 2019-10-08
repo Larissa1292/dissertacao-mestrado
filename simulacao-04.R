@@ -147,9 +147,9 @@ for(i in 1:R){
       method = "L-BFGS-B",
       control = list(fnscale = -1), ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
       lower = c(0, 0,-Inf,-Inf,-Inf),
-      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf)
-      # w = w, # aqui w e y nao sao fixos
-      # y = ytil
+      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
+       w = w,
+       y = y
     )
     
     
