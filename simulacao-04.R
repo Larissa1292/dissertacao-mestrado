@@ -27,12 +27,12 @@ n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
 
-beta0 <- 0
-beta1 <- 1
 pi0 <- 0.1
 pi1 <- 0.2
-lambda <- 0.2
-sig <- 0.2 # => sig² = 0.01
+beta0 <- 0
+beta1 <- 1
+lambda <- 2
+sig <- 0.2 # => sig² = 0.04
 R <- 500 #num de replicas de Monte Carlo
 n <- 10000 # tamanho da amostra
 
