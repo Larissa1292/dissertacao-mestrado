@@ -32,7 +32,7 @@ pi1 <- 0.2
 beta0 <- 0
 beta1 <- 1
 lambda <- 2
-sig <- 0.2 # => sig² = 0.04
+sig <- 0.001 # => sig² = 0.000001
 R <- 500 #num de replicas de Monte Carlo
 n <- 10000 # tamanho da amostra
 
@@ -50,7 +50,7 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
-  sig = 0.2
+  sig = 0.001
   n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
