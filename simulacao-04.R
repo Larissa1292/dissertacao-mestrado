@@ -109,32 +109,32 @@ for(i in 1:R){
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
   print(Sys.time() - inicio)
   
-  # p.i <- ifelse(y == 0, pi0, pi1)
-  # 
-  # uniformes <- runif(n, 0, 1)
-  # 
-  # comparacao <- ifelse(uniformes < p.i, 1, 0)
+  p.i <- ifelse(y == 0, pi0, pi1)
+   
+  uniformes <- runif(n, 0, 1)
+   
+  comparacao <- ifelse(uniformes < p.i, 1, 0)
   #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
   
   #### Passo 4: Gerar Ytil ####
   
-  gama2 <- c(beta1, lambda / sig) #Definir como vetor linha
-  mu.w2 <- cbind(beta0 * rep(1, n),-lambda * w / sig)
-  media2 <- rep(0, 2)
-  covariancia2 <- diag(2) + (sig ^ 2 * (as.matrix(gama2) %*% t(gama2)))
-  up2 <- cbind(beta0 + beta1 * w, rep(0, n))
-  
-  esp_cond <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
-  
-  for (j in 1:n) {
-    esperanca <- 2 * mvtnorm::pmvnorm(mean = media2, sigma = covariancia2, lower = c(-Inf,-Inf), upper = up2[j, ])
-    esp_cond[j] <- esperanca[1] # armazenando os valores de E_X|W
-  }
+  # gama2 <- c(beta1, lambda / sig) #Definir como vetor linha
+  # mu.w2 <- cbind(beta0 * rep(1, n),-lambda * w / sig)
+  # media2 <- rep(0, 2)
+  # covariancia2 <- diag(2) + (sig ^ 2 * (as.matrix(gama2) %*% t(gama2)))
+  # up2 <- cbind(beta0 + beta1 * w, rep(0, n))
+  # 
+  # esp_cond <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
+  # 
+  # for (j in 1:n) {
+  #   esperanca <- 2 * mvtnorm::pmvnorm(mean = media2, sigma = covariancia2, lower = c(-Inf,-Inf), upper = up2[j, ])
+  #   esp_cond[j] <- esperanca[1] # armazenando os valores de E_X|W
+  # }
   
   #probit <- pnorm(beta0 + beta1 * w)
-  ytil <- pi0 + (1 - pi0 - pi1) * esp_cond
+  #ytil <- pi0 + (1 - pi0 - pi1) * esp_cond
   
-  #ytil <- abs(y - comparacao)
+  ytil <- abs(y - comparacao)
 
   print(Sys.time() - inicio)
   
