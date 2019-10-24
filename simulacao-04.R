@@ -27,14 +27,14 @@ n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
 
-pi0 <- 0.1
-pi1 <- 0.2
-beta0 <- 0
-beta1 <- 1
-lambda <- 2
-sig <- 0.001 # => sig² = 0.000001
-R <- 500 #num de replicas de Monte Carlo
-n <- 10000 # tamanho da amostra
+# pi0 <- 0.1
+# pi1 <- 0.2
+# beta0 <- 0
+# beta1 <- 1
+# lambda <- 2
+# sig <- 0.001 # => sig² = 0.000001
+# R <- 500 #num de replicas de Monte Carlo
+# n <- 10000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -50,7 +50,7 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
-  sig = 0.001
+  sig = 0.1
   n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
@@ -142,8 +142,7 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      #par = c(0.09, 0.19, 0.001, 0.99, 1.98), # chute inicial
-      par = c(0.07, 0.17, 0.0001, 0.97, 1.96),
+      par = c(0.03, 0.03, 0.001, 0.99, 0.0009), # chute inicial; considerando pi0 = pi1 = 0.05
       fn = m4_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1), ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
