@@ -134,7 +134,7 @@ for(i in 1:R){
   #probit <- pnorm(beta0 + beta1 * w)
   #ytil <- pi0 + (1 - pi0 - pi1) * esp_cond
   
-  ytil <- abs(y - comparacao)
+  ytil <- abs(comparacao - y)
 
   print(Sys.time() - inicio)
   
