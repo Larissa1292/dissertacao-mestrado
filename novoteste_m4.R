@@ -1,5 +1,4 @@
-# Rodar com: R = 500 e n = 10000
-# Limites do L-BFGS-B: lower = (0, 0, -10, -10, -10); upper = (0.999999, 0.999999, 10, 10, 10)
+# Modelo 4: Modelo com erro de classificação e erro de medida
 
 require(fExtremes)
 require(mvtnorm)
@@ -94,18 +93,22 @@ emv.lambda <- rep(0, R)
 
 for(i in 1:R){
   print(i)
+  print(Sys.time() - inicio)
   
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
   
   w <- runif(n,-4, 4)
+  print(Sys.time() - inicio)  
   
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
   x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
+  print(Sys.time() - inicio)  
   
   #### Passo 3: Gerar y_i da Bernoulli ####
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
+  print(Sys.time() - inicio)  
   
   p.i <- ifelse(y == 0, pi0, pi1)
   
@@ -116,29 +119,32 @@ for(i in 1:R){
   #### Passo 4: Gerar Ytil ####
   
   ytil <- abs(comparacao - y)
+  print(Sys.time() - inicio)  
   
   #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
   
   #### Calculando a log-verossimilhanca para cada n ####
-  m4_n <- function(theta) {
-    m4_loglik(theta, w, ytil) 
-  }
+  # m4_n <- function(theta) {
+  #   m4_loglik(theta, w, ytil) 
+  # }
   
   #### Passo 5: otimizacao ####
   
   tryCatch(  {
-    otimizacao <- optim(
+    otimizacao <- optimParallel(
       #par = c(0.1, 0.2, 0, 1, 2), #chutes iniciais
       par = c(0.03, 0.03, 0.001, 0.99, 0.0009),
       fn = m4_n,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
       lower = c(0.000001, 0.000001,-Inf,-Inf,-Inf),
-      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf)
+      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
+      w = w,
+      y = y
     )
     ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
     
-    
+    print(Sys.time() - inicio)
     if (otimizacao$convergence == 0) { #0: indica convergencia completa
       emv.pi0[i] = otimizacao$par[1]
       emv.pi1[i] = otimizacao$par[2]
@@ -162,6 +168,14 @@ pi1medio <- mean(emv.pi1)
 beta0medio <- mean(emv.beta0)
 beta1medio <- mean(emv.beta1)
 lambdamedio <- mean(emv.lambda)
+
+# calculando o erro padrão das estimativas de cada parâmetro
+pi0sd <- sd(emv.pi0)
+pi1sd <- sd(emv.pi1)
+beta0sd <- sd(emv.beta0)
+beta1sd <- sd(emv.beta1)
+lambdasd <- sd(emv.lambda)
+
 
 #### Calculando viés e erro quadratico medio (eqm) ####
 # calculando o viés (vies = media - valor verdadeiro do parametro)
@@ -191,7 +205,6 @@ lambdaEQM <- var(emv.lambda) + (lambdavies) ^ 2
 fim <- Sys.time()
 tempo <- fim - inicio
 
-#### Lista com os resultados finais ####
 resultado <- list(
   Num_obs = n,
   Replicas = R,
@@ -205,6 +218,11 @@ resultado <- list(
   Beta0_est_medio = beta0medio,
   Beta1_est_medio = beta1medio,
   Lambda_est_medio = lambdamedio,
+  Pi0_sd = pi0sd,
+  P1_sd = pi1sd,
+  Beta0_sd = beta0sd,
+  Beta1_sd = beta1sd,
+  Lambda_sd = lambdasd,
   Pi0_est_vies = pi0vies,
   Pi1_est_vies = pi1vies,
   Beta0_est_vies = beta0vies,
@@ -226,3 +244,6 @@ resultado <- list(
 
 # Imprimindo os resultados
 resultado
+
+# Salvando os resultados em um arquivo
+write.csv(x = resultado, file = paste0("m4_r", R, "_n", n, "_l", lambda, "_sig", sig, ".csv"))
