@@ -49,7 +49,7 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
-  sig = 0.2
+  sig = 0.01
   n = 1000
   
   #### Definindo expressões e valores para a esp.condicional ####
