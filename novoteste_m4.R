@@ -49,8 +49,8 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
-  sig = 0.1
-  n = 10000
+  sig = 0.2
+  n = 1000
   
   #### Definindo expressões e valores para a esp.condicional ####
   
@@ -128,7 +128,8 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optim(
-      par = c(0.1, 0.2, 0, 1, 2),
+      par = c(0.1, 0.2, 0, 1, 2), #chutes iniciais
+      #par = c(0.03, 0.03, 0.001, 0.99, 0.0009),
       fn = m4_n,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
