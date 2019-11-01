@@ -134,7 +134,7 @@ for(i in 1:R){
     otimizacao <- optimParallel(
       #par = c(0.1, 0.2, 0, 1, 2), #chutes iniciais
       par = c(0.03, 0.03, 0.001, 0.99, 0.0009),
-      fn = m4_n,
+      fn = m4_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
       lower = c(0.000001, 0.000001,-Inf,-Inf,-Inf),
