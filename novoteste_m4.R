@@ -27,10 +27,10 @@ n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 # beta0 <- 0
 # beta1 <- 1
-# pi0 <- 0.1
-# pi1 <- 0.2
-# lambda <- 2
-# sig <- 0.2
+# pi0 <- 0.05
+# pi1 <- 0.05
+# lambda <- 0.001
+# sig <- 0.01
 # R <- 10 #num de replicas de Monte Carlo
 # n <- 1000# tamanho da amostra
 
@@ -125,7 +125,8 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optim(
-      par = c(0.1, 0.2, 0, 1, 2),
+      #par = c(0.1, 0.2, 0, 1, 2), #chutes iniciais
+      par = c(0.03, 0.03, 0.001, 0.99, 0.0009),
       fn = m4_n,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
@@ -158,6 +159,13 @@ pi1medio <- mean(emv.pi1)
 beta0medio <- mean(emv.beta0)
 beta1medio <- mean(emv.beta1)
 lambdamedio <- mean(emv.lambda)
+
+# calculando o erro padrão das estimativas de cada parâmetro
+pi0sd <- sd(emv.pi0)
+pi1sd <- sd(emv.pi1)
+beta0sd <- sd(emv.beta0)
+beta1sd <- sd(emv.beta1)
+lambdasd <- sd(emv.lambda)
 
 #### Calculando viés e erro quadratico medio (eqm) ####
 # calculando o viés (vies = media - valor verdadeiro do parametro)
