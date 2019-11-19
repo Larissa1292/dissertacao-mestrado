@@ -27,14 +27,14 @@ n <- as.numeric(argumentos[8]) # tamanho da amostra
 
 #### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
 
-# pi0 <- 0.1
-# pi1 <- 0.2
 # beta0 <- 0
 # beta1 <- 1
-# lambda <- 2
-# sig <- 0.001 # => sig² = 0.000001
+# pi0 <- 0.05
+# pi1 <- 0.05
+# lambda <- 0.001
+# sig <- 0.1 # => sig² = 0.01
 # R <- 500 #num de replicas de Monte Carlo
-# n <- 10000 # tamanho da amostra
+# n <- 20000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -51,7 +51,7 @@ set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
   sig = 0.2
-  n = 1000
+  n = 20000
   #### Definindo expressões e valores para a esp.condicional ####
   
   #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m4
@@ -108,33 +108,16 @@ for(i in 1:R){
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
   print(Sys.time() - inicio)
-  
   p.i <- ifelse(y == 0, pi0, pi1)
-   
+
   uniformes <- runif(n, 0, 1)
-   
+
   comparacao <- ifelse(uniformes < p.i, 1, 0)
   #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
   
   #### Passo 4: Gerar Ytil ####
   
-  # gama2 <- c(beta1, lambda / sig) #Definir como vetor linha
-  # mu.w2 <- cbind(beta0 * rep(1, n),-lambda * w / sig)
-  # media2 <- rep(0, 2)
-  # covariancia2 <- diag(2) + (sig ^ 2 * (as.matrix(gama2) %*% t(gama2)))
-  # up2 <- cbind(beta0 + beta1 * w, rep(0, n))
-  # 
-  # esp_cond <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
-  # 
-  # for (j in 1:n) {
-  #   esperanca <- 2 * mvtnorm::pmvnorm(mean = media2, sigma = covariancia2, lower = c(-Inf,-Inf), upper = up2[j, ])
-  #   esp_cond[j] <- esperanca[1] # armazenando os valores de E_X|W
-  # }
-  
-  #probit <- pnorm(beta0 + beta1 * w)
-  #ytil <- pi0 + (1 - pi0 - pi1) * esp_cond
-  
-  ytil <- abs(comparacao - y)
+  ytil <- abs(y - comparacao)
 
   print(Sys.time() - inicio)
   
@@ -142,17 +125,16 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      #par = c(0.03, 0.03, 0.001, 0.99, 0.0009), # chute inicial; considerando pi0 = pi1 = 0.05
-      par = c(0.09, 0.19, 0.001, 0.99, 0.0009),
+      par = c(0.09, 0.19, 0.001, 0.99, 1.98),
       fn = m4_loglik,
       method = "L-BFGS-B",
-      control = list(fnscale = -1), ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
+      control = list(fnscale = -1),
       lower = c(0, 0,-Inf,-Inf,-Inf),
       upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
-       w = w,
-       y = y
+      w = w,
+      y = ytil
     )
-    
+    ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
     
     print(Sys.time() - inicio)
     if (otimizacao$convergence == 0) { #0: indica convergencia completa
