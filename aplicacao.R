@@ -7,7 +7,7 @@
 
 x <- rep(0, 2)
 y1 <- rep(1, 2784)
-y0 <- rep(0, 10201)
+y2 <- rep(0, 10201)
 y <- c(y1, y0)
 head(y)
 tail(y)
@@ -86,8 +86,22 @@ y17 <- rep(1, 21)
 y18 <- rep(0, 51)
 y19 <- rep(1, 13)
 y20 <- rep(0, 23)
+  
 
+Y <- rbind(c(y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15, y16, y17, y18, y19, y20))
 
-Y <- rbind(c(y1, y201, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15, y16, y17, y18, y19, y20))
+W <- rbind(c(w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, w16, w17, w18, 
+             w19, w20))
 
-W <- rbind(c(w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, w16, w17, w18, w19, w20))
+banco <- matrix(c(W,Y), nrow = length(W), ncol = 2, byrow = T)
+
+banco <-  data.frame(c(W, Y))
+
+banco <- cbind(c(W,Y))
+
+head(banco)
+tail(banco)
+
+length(W)
+dim(W)
+class(W)
