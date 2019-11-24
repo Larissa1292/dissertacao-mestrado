@@ -143,8 +143,8 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      #par = c(0.03, 0.03, 0.001, 0.99, 0.0009), # chute inicial; considerando pi0 = pi1 = 0.05
-      par = c(0.05, 0.05, 0, 1, 0.001),
+      par = c(0.03, 0.03, 0.001, 0.99, 0.0009), # chute inicial; considerando pi0 = pi1 = 0.05
+      #par = c(0.05, 0.05, 0, 1, 0.001),
       fn = m4_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1), ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
