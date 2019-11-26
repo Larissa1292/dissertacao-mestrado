@@ -7,7 +7,7 @@
 
 x <- rep(0, 2)
 y1 <- rep(1, 2784)
-y2 <- rep(0, 10201)
+y2 <- rep(0, 10201)ww
 y <- c(y1, y0)
 head(y)
 tail(y)
@@ -31,7 +31,7 @@ Y <- dados[,c(2,3)]
 mod <- lm(Y~X)
 mod <- lm(c(Y[,1],c[Y[,2]])~X)
 
-## Exemplo do help
+## Exemplo do help do r
 ctl <- c(4.17,5.58,5.18,6.11,4.50,4.61,5.17,4.53,5.33,5.14)
 trt <- c(4.81,4.17,4.41,3.59,5.87,3.83,6.03,4.89,4.32,4.69)
 group <- gl(2, 10, 20, labels = c("Ctl","Trt"))
@@ -55,7 +55,7 @@ w9 <- rep(1, 586) * 0.324
 w10 <- rep(1, 1785) * 0.324
 w11 <- rep(1, 339) * 0.693
 w12 <- rep(1, 826) * 0.693
-w13 <- rep(1, 201) * 1.350
+w13 <- rep(1, 204) * 1.350
 w14 <- rep(1, 369) * 1.350
 w15 <- rep(1, 57) * 2.350
 w16 <- rep(1, 86) * 2.350
@@ -86,22 +86,33 @@ y17 <- rep(1, 21)
 y18 <- rep(0, 51)
 y19 <- rep(1, 13)
 y20 <- rep(0, 23)
-  
 
-Y <- rbind(c(y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15, y16, y17, y18, y19, y20))
+## Juntando os y_i em um único Y, onde i = 20:
 
-W <- rbind(c(w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, w16, w17, w18, 
-             w19, w20))
+Y <- matrix(c(y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15, y16, y17, y18, 
+              y19, y20), ncol = 1)
 
-banco <- matrix(c(W,Y), nrow = length(W), ncol = 2, byrow = T)
+## Juntando os w_i em um único Y, onde i = 20:
 
-banco <-  data.frame(c(W, Y))
+W <- matrix(c(w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13, w14, w15, w16, w17, w18, 
+             w19, w20), ncol = 1)
 
-banco <- cbind(c(W,Y))
+length(W) 
+length(Y)
 
-head(banco)
-tail(banco)
+#Atribuindo nomes as colunas da matriz:
 
-length(W)
-dim(W)
-class(W)
+row_names <- c()
+col_names <- c("W", "Y")
+
+banco <- matrix(c(W,Y), nrow = length(W), ncol = 2, byrow = F, dimnames = list(row_names, col_names))
+
+#Transformando o banco em data frame:
+banco2 <- as.data.frame(banco)
+class(banco2)
+
+modelo <- glm(Y ~ W, family = binomial(link = "probit"), data = banco2)
+summary(modelo)
+
+
+
