@@ -115,4 +115,9 @@ modelo <- glm(Y ~ W, family = binomial(link = "probit"), data = banco2)
 summary(modelo)
 
 
+#O parâmetro \beta_0 corresponde ao intercepto do plano com o eixo z. 
+#Se x=(x_1, x_2)=(0,0) o parâmetro beta_0 fornece a resposta média nesse ponto.
+#Caso contrário, não é possível interpretar o parâmetro beta_0.
 
+#O parâmetro \beta_1 indica uma mudança na resposta média a cada unidade de mudança em 
+# x_1, quando as demais variáveis são mantidas fixas.
