@@ -1,5 +1,7 @@
 ## Aplicacao:
 
+require(sn)
+
 #Data of Sposto et al. "The effect os diagnostic misclassification on non cancer and 
 # cancer mortality dose response in A-bomb survivors"
 
@@ -111,8 +113,60 @@ banco <- matrix(c(W,Y), nrow = length(W), ncol = 2, byrow = F, dimnames = list(r
 banco2 <- as.data.frame(banco)
 class(banco2)
 
-modelo <- glm(Y ~ W, family = binomial(link = "probit"), data = banco2)
-summary(modelo)
+#### Modelo 1: Sem erro de classificação e sem erro de medida #### ok
+
+set.seed(1992)
+
+modelo1 <- glm(Y ~ W, family = binomial(link = "probit"), data = banco2)
+summary(modelo1)
+
+#### Modelo 2: Somente erro de classificação (X = W) ####
+
+w <- banco2$W
+
+x <- w
+
+modelo2 <- glm(Y ~ W, family = binomial(link = "probit"), data = banco2)
+summary(modelo2)
+
+#### Modelo 3: Somente erro de medida (Y_t = Y) #### ok
+# parametros <- c(beta0, beta1, lambda)
+
+sig <- 0.1
+lambda <- 2 #verificar como estimar
+
+w <- banco2$W
+x <- rsn(n = length(banco2$W), xi = w, omega = sig ^ 2, alpha = lambda)
+banco2$X <- x
+
+modelo3 <- glm(Y ~ X, family = binomial(link = "probit"), data = banco2)
+summary(modelo3)
+
+#### Modelo 4: Com erro de classificação e com erro de medida ####
+sig <- 0.1
+lambda <- 2 #verificar como estimar
+pi0 <- 0.1
+pi1 <- 0.2
+
+w <- banco2$W
+x <- rsn(n = length(banco2$W), xi = w, omega = sig ^ 2, alpha = lambda)
+y.t <- banco2$Y
+
+#gerando Y (observado)
+p.i <- ifelse(y.t == 0, pi0, pi1)
+uniformes <- runif(length(banco2$W), 0, 1)
+comparacao <- ifelse(uniformes < p.i, 1, 0)
+y <- abs(y.t - comparacao)
+banco2$Ytil <- y 
+
+
+modelo4 <- glm(Ytil ~ X, family = binomial(link = "probit"), data = banco2)
+summary(modelo4)
+
+
+
+##### Novas ideias sobre a origem dos dados para os diferentes modelos
+
 
 
 #O parâmetro \beta_0 corresponde ao intercepto do plano com o eixo z. 
