@@ -199,6 +199,8 @@ resultado <- list(
   # Pi1_est_medio = pi1medio,
   Beta0_est_medio = beta0medio,
   Beta1_est_medio = beta1medio,
+  Beta0_sd = beta0sd,
+  Beta1_sd = beta1sd,
   # Lambda_est_medio = lambdamedio,
   # Pi0_est_vies = pi0vies,
   # Pi1_est_vies = pi1vies,
