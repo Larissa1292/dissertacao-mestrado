@@ -125,8 +125,8 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optim(
-      par = c(0.1, 0.2, 0, 1, 2), #chutes iniciais
-      #par = c(0.03, 0.03, 0.001, 0.99, 1.98),
+      #par = c(0.1, 0.2, 0, 1, 2), #chutes iniciais
+      par = c(0.03, 0.03, 0.001, 0.99, 1.98),
       #par = c(0.05, 0.05, 0, 1, 2), #chutes iniciais
       fn = m4_n,
       method = "L-BFGS-B",
