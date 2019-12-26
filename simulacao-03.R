@@ -116,7 +116,8 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      par = c(0.001, 0.99, 0.0009), #chutes iniciais de acordo com o esquema 1
+      #par = c(0.001, 0.99, 0.0009), #chutes iniciais de acordo com o esquema 1 e 2
+      par = c(0.001, 0.99, 1.98), #chutes iniciais de acordo com o esquema 3
       fn = m3_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
