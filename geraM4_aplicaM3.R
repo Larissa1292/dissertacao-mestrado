@@ -10,7 +10,7 @@ require(optimParallel)
 argumentos <- commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
 
 
-cl <- makeCluster(3)     # definindo o num de clusters no processador
+cl <- makeCluster(7)     # definindo o num de clusters no processador
 setDefaultCluster(cl=cl) # definindo 'cl' como cluster padrao
 
 #### Definindo os parâmetros iniciais (via terminal) ####
