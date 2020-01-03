@@ -10,7 +10,7 @@ require(optimParallel)
 argumentos <- commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
 
 
-cl <- makeCluster(3)     # definindo o num de clusters no processador
+cl <- makeCluster(7)     # definindo o num de clusters no processador
 setDefaultCluster(cl=cl) # definindo 'cl' como cluster padrao
 
 #### Definindo os parâmetros iniciais (via terminal) ####
@@ -49,7 +49,7 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
-  sig = 0.1
+  sig = 0.7
   n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
@@ -127,7 +127,8 @@ for(i in 1:R){
     otimizacao <- optimParallel(
       #par = c(0.09, 0.19, 0.001, 0.99, 1.98), #chutes iniciais
       #par = c(0.009, 0.009, 0.001, 0.99, 0.0009), #chutes iniciais para esquema 1 (sig=0.1)
-      par = c(0.03, 0.03, 0.001, 0.99, 0.0009), #chutes iniciais para esquema 2 (sig=0.7)
+      #par = c(0.03, 0.03, 0.001, 0.99, 0.0009), #chutes iniciais para esquema 2 (sig=0.7)
+      par = c(0.03, 0.03, 0.001, 0.99, 1.98), #chutes iniciais para esquema 3 (sig=0.7)
       fn = m4_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
@@ -241,4 +242,4 @@ resultado <- list(
 resultado
 
 # Salvando os resultados em um arquivo
-write.csv(x = resultado, file = paste0("geram4_aplicam2_r", R, "_n", n, "_l", lambda, "_sig", sig, ".csv"))
+write.csv(x = resultado, file = paste0("geraM4_aplicaM2_r", R, "_n", n, "_l", lambda, "_sig", sig, ".csv"))
