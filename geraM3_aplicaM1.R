@@ -122,7 +122,8 @@ for(i in 1:R){
     otimizacao <- optimParallel(
       #par = c(0.001, 0.99, 0.01),
       #par = c(0.001, 0.99, 0.0009), #chutes iniciais para esquema 1 (sig=0.1)
-      par = c(0.001, 0.99, 0.0009), #chutes iniciais para esquema 2 (sig=0.7)
+      #par = c(0.001, 0.99, 0.0009), #chutes iniciais para esquema 2 (sig=0.7)
+      par = c(0.001, 0.99, 1.98), #chutes iniciais para esquema 3 (sig=0.7)
       fn = m3_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
