@@ -1,4 +1,6 @@
-# Modelo 4: Modelo com erro de classificação e erro de medida
+# Simulação de MC para o modelo 4 (Com erro de classificacao e erro de medida)
+
+# Gera M4 e aplica no M1
 
 require(fExtremes)
 require(mvtnorm)
@@ -8,9 +10,8 @@ require(optimParallel)
 argumentos <- commandArgs(trailingOnly = TRUE) #comando para inserir os valores dos parametros via terminal
 
 
-cl <- makeCluster(3)     # definindo o num de clusters no processador
+cl <- makeCluster(7)     # definindo o num de clusters no processador
 setDefaultCluster(cl=cl) # definindo 'cl' como cluster padrao
-
 
 #### Definindo os parâmetros iniciais (via terminal) ####
 
@@ -23,16 +24,16 @@ sig <- as.numeric(argumentos[6]) # => sig² = 0.01
 R <- as.numeric(argumentos[7]) #num de replicas de Monte Carlo
 n <- as.numeric(argumentos[8]) # tamanho da amostra
 
-#### Definindo os parâmetros iniciais ####
+#### Definindo os parâmetros iniciais (para rodar direto pelo rstudio) ####
 
 # beta0 <- 0
 # beta1 <- 1
 # pi0 <- 0.05
 # pi1 <- 0.05
 # lambda <- 0.001
-# sig <- 0.01
-# R <- 10 #num de replicas de Monte Carlo
-# n <- 1000# tamanho da amostra
+# sig <- 0.1 # => sig² = 0.01
+# R <- 500 #num de replicas de Monte Carlo
+# n <- 20000 # tamanho da amostra
 
 #### Vetor de parâmetros ####
 
@@ -48,9 +49,11 @@ inicio <- Sys.time()
 set.seed(1992)
 
 m4_loglik <- function(theta, w, y){
-  
+  sig = 0.7
+  n = 10000
   #### Definindo expressões e valores para a esp.condicional ####
   
+  #theta <- c(0.1, 0.2, 0, 1, 2) #vetor para testar sem precisar rodar a funcao m4
   gama <- c(theta[4], theta[5] / sig) #Definir como vetor linha
   mu.w <- cbind(theta[3] * rep(1, n),-theta[5] * w / sig)
   media <- rep(0, 2)
@@ -61,12 +64,15 @@ m4_loglik <- function(theta, w, y){
   
   #### Definindo o resultado da Esperança Condicional ####
   
-  prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
+  # prob <- vector() #inicializando um vetor para armazenar os valores da 'funcao prob'
+  # 
+  # for (k in 1:n) {
+  #   esp <- 2 * mvtnorm::pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
+  #   prob[k] <- esp[1] # Aplicando M3 nos dados do M4
+  # }
+  # 
   
-  for (k in 1:n) {
-    esp <- 2 * pmvnorm(mean = media, sigma = covariancia, lower = c(-Inf,-Inf), upper = up[k, ])
-    prob[k] <- theta[1] + (1 - theta[1] - theta[2]) * esp[1] # funcao p = pi0 + (1 - pi0 - pi1) * E_X|W
-  }
+  prob <- pnorm(theta[1] + theta[2] * w) # Aplicando M1 nos dados do M4
   
   ## Se prob = 1, assumir 0.999999999; Se prob = 0, assumir 0.000000001:
   p <- ifelse(prob == 1, 0.999999999, prob)
@@ -83,60 +89,59 @@ emv.beta0 <- rep(0, R)
 emv.beta1 <- rep(0, R)
 emv.lambda <- rep(0, R)
 
-#inicializando o contador de falhas
-#falhas <- 0
-
 #### Processo de  Monte Carlo ####
 # i <- 1 # p/ testar o programar sem rodar o 'for'
 
 for(i in 1:R){
   print(i)
+  print(Sys.time() - inicio)
   
   #### Passo 1: Gerar w_i amostras da U(-4, 4) ####
   
   w <- runif(n,-4, 4)
+  print(Sys.time() - inicio)  
   
   #### Passo 2: Gerar x_i amostras da Skew Normal ####
   
   x <- rsn(n = n, xi = w, omega = sig ^ 2, alpha = parametros[5])
+  print(Sys.time() - inicio)
   
   #### Passo 3: Gerar y_i da Bernoulli ####
   
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
-  
+  print(Sys.time() - inicio)
   p.i <- ifelse(y == 0, pi0, pi1)
   
   uniformes <- runif(n, 0, 1)
   
   comparacao <- ifelse(uniformes < p.i, 1, 0)
+  #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
   
   #### Passo 4: Gerar Ytil ####
   
-  ytil <- abs(comparacao - y)
+  ytil <- abs(y - comparacao)
   
-  #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
-  
-  #### Calculando a log-verossimilhanca para cada n ####
-  m4_n <- function(theta) {
-    m4_loglik(theta, w, ytil) 
-  }
+  print(Sys.time() - inicio)
   
   #### Passo 5: otimizacao ####
   
   tryCatch(  {
-    otimizacao <- optim(
-      #par = c(0.1, 0.2, 0, 1, 2), #chutes iniciais
-      par = c(0.03, 0.03, 0.001, 0.99, 1.98),
-      #par = c(0.05, 0.05, 0, 1, 2), #chutes iniciais
-      fn = m4_n,
+    otimizacao <- optimParallel(
+      #par = c(0.09, 0.19, 0.001, 0.99, 1.98), #chutes iniciais
+      #par = c(0.009, 0.009, 0.001, 0.99, 0.0009), #chutes iniciais para esquema 1 (sig=0.1)
+      #par = c(0.03, 0.03, 0.001, 0.99, 0.0009), #chutes iniciais para esquema 2 (sig=0.7)
+      par = c(0.03, 0.03, 0.001, 0.99, 1.98), #chutes iniciais para esquema 3 (sig=0.7)
+      fn = m4_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
-      lower = c(0.000001, 0.000001,-Inf,-Inf,-Inf),
-      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf)
+      lower = c(0, 0,-Inf,-Inf,-Inf),
+      upper = c(0.99999999999, 0.99999999999, Inf, Inf, Inf),
+      w = w,
+      y = ytil
     )
     ## O R faz minimização por default, então para maximizar devo usar "control=list(fnscale=-1)"
     
-    
+    print(Sys.time() - inicio)
     if (otimizacao$convergence == 0) { #0: indica convergencia completa
       emv.pi0[i] = otimizacao$par[1]
       emv.pi1[i] = otimizacao$par[2]
@@ -195,6 +200,7 @@ lambdaEQM <- var(emv.lambda) + (lambdavies) ^ 2
 # Finalizando a contagem do tempo de execução do programa
 fim <- Sys.time()
 tempo <- fim - inicio
+tempo
 
 #### Lista com os resultados finais ####
 resultado <- list(
@@ -238,4 +244,4 @@ resultado <- list(
 resultado
 
 # Salvando os resultados em um arquivo
-write.csv(x = resultado, file = paste0("m4_r", R, "_n", n, "_l", lambda, "_sig", sig, ".csv"))
+write.csv(x = resultado, file = paste0("geraM4_aplicaM3_r", R, "_n", n, "_l", lambda, "_sig", sig, ".csv"))

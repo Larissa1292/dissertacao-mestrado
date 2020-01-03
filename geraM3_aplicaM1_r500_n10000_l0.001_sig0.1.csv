@@ -1,0 +1,2 @@
+"","Num_obs","Replicas","Beta_0","Beta_1","Lambda","Beta0_est_medio","Beta1_est_medio","Lambda_est_medio","Beta0_sd","Beta1_sd","Lambda_sd","Beta0_est_vies","Beta1_est_vies","Lambda_est_vies","Beta0_est_vies_rel","Beta1_est_vies_rel","Lambda_est_vies_rel","EQM_Beta0","EQM_Beta1","EQM_Lambda","Tempo_Execução"
+"1",10000,500,0,1,0.001,0.000655728073107514,1.00211365987252,0.01,0.0220265538913841,0.0189905338101642,0,0.000655728073107514,0.00211365987252088,0.009,Inf,0.00211365987252088,9,0.000485599055635909,0.000365107932451693,8.1e-05,1.34244584639867

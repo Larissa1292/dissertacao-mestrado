@@ -1,19 +1,15 @@
-argumentos = commandArgs(trailingOnly = TRUE)
-
 # Simulação de MC para o modelo 3 (Somente com erro de medida)
 # Modelo somente com erro de medida, logo não tem erro de classificacao. Com isso, pi0 = 0 e pi1 = 0.
 
-# Rodar para R = 100 e n = 5000 ok
-# Rodar para R = 500 e n = 10000 ok
+argumentos = commandArgs(trailingOnly = TRUE)
 
 require(fExtremes)
 require(mvtnorm)
 require(sn)
 library(optimParallel)
-cl <- makeCluster(3)     # set the number of processor cores
+
+cl <- makeCluster(7)     # set the number of processor cores
 setDefaultCluster(cl=cl) # set 'cl' as default cluster
-
-
 
 #### Definindo os parâmetros iniciais ####
 
@@ -127,7 +123,8 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      par = c(0.0001, 0.95, 0.001),
+      #par = c(0.0001, 0.95, 0.001),
+      par = c(0.001, 0.99, 1.98), #chutes iniciais de acordo com o esquema 3
       fn = m3_loglik,
       method = "L-BFGS-B",
       control = list(fnscale = -1),
