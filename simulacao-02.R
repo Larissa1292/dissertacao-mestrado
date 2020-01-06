@@ -107,12 +107,16 @@ for(i in 1:R){
   y <- rbinom(n = n, size = 1, prob = pnorm(parametros[3] + parametros[4] * x))
   print(Sys.time() - inicio)
   
+  p.i <- ifelse(y == 0, pi0, pi1)
+  
+  uniformes <- runif(n, 0, 1)
+  
+  comparacao <- ifelse(uniformes < p.i, 1, 0)
+  #Comparar cada elemento da Uniforme com o vetor y em (pi0, pi1)
+  
   #### Passo 4: Gerar Ytil ####
   
-  probit <- pnorm(beta0 + beta1 * w)
-  ytil <- pi0 + (1 - pi0 - pi1) * probit
-  
-  # ytil <- abs(y - comparacao)
+  ytil <- abs(y - comparacao)
   
   print(Sys.time() - inicio)
   
@@ -120,7 +124,7 @@ for(i in 1:R){
   
   tryCatch(  {
     otimizacao <- optimParallel(
-      par = c(0.1, 0.2, 0, 1),
+      #par = c(0.1, 0.2, 0, 1),
       par = c(0.009, 0.009, 0.001, 0.99), #chutes iniciais para esquema 1
       fn = m2_loglik,
       method = "L-BFGS-B",
